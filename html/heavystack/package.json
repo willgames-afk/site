@@ -1,0 +1,24 @@
+{
+	"name":"heavystack-highlight",
+	"version" : "0.1.0",
+	"publisher": "William Kam",
+	"engines": {
+		"vscode": "^1.62.0"
+	},
+
+	"contributes": {
+		"languages": [
+			{
+				"id": "heavystack",
+				"extensions": [".heavy"]
+			}
+		],
+		"grammars": [
+			{
+				"language": "heavystack",
+				"scopeName": "source.heavystack",
+				"path": "./heavystack.tmGrammar.json"
+			}
+		]
+	}
+}

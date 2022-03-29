@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Console Quest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href='/default.css' rel="stylesheet">
+    <style>
+        pre {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+    <script src="/noms/nom.js"></script>
+</head>
+
+<body>
+    <div class='mainbox'>
+        <pre>
+ _                         _                  
+/   _   _   _  _  |  _    / \      _    _  _|_
+\_ (_) | | _> (_) | (/_   \_X |_| (/_  _>   | </pre>
+        <div class='menu'>
+            <p id='localhost?'>Not locally hosted</p>
+            <script src='/localhostdetector.js'></script>
+            <a href='/'>Homepage</a>
+            <a href='/consolequest/maps/'>Maps</a>
+        </div>
+
+        <!--Content Goes Here-->
+        <p>Right Click, then select Inspect, then click the Console Tab. If you are on a school owned chromebook, this might not work. If you want to upload a map file click the button below, I have some available for download <a href="maps/">HERE</a>.</p>
+        <input type="file" id='file' accept=".txt,.json">
+        <script src="Main.js"></script>
+
+    </div>
+</body>
+
+</html>

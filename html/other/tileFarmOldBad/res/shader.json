@@ -1,0 +1,16 @@
+{
+	"type" : "shader",
+	"srcFiles" : {
+		"vert": "shader.vs",
+		"frag": "shader.fs"
+	},
+	"attributes" : {
+		"vertexPosition": "aVertexPosition",
+		"vertexColor": "aVertexColor",
+		"textureCoordanate": "aTexCoord"
+	},
+	"uniforms": {
+		"viewMatrix":  "uModelViewMatrix",
+		"projectionMatrix": "uProjectionMatrix"
+	}
+}

@@ -1,0 +1,40 @@
+@font-face {
+	font-family: "Tahoma Regular";
+	src: url('res/Tahoma\ Regular\ font.ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+
+
+body {margin:0px}
+
+table{
+	background-color: black;
+	font-family: 'Verdana', monospace;
+	color: #00FF00/*#64fa09*/;
+	margin: 0px;
+	padding: 0px;
+	/*border-collapse:collapse;*/
+	border-spacing: 0.5em;
+}
+tr {margin: 0px;padding:0px;border:0px}
+td {min-height:max-content;margin: 0px;padding:0px;}
+td[bar] {
+	font-weight: 900;
+	font-size: large;
+}
+
+.thing table tr:nth-child(4n) {
+	color: #F0F000;
+}
+
+
+.label tr:first-child {font-size:small;}
+
+.channelname {font-size:small;}
+
+.channel {margin-left: 3px;}
+/*.channel>tr>td{}*/
+
+.fxlabel {font-size:x-small;vertical-align: bottom;text-align: center;}

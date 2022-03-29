@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>TinyJS</title>
+	<link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+	<link href='/default.css' rel="stylesheet">
+	<style>
+		.menu {
+			display: block;
+			background-color: rgb(90, 90, 90);
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+		}
+
+		.menu h1 {
+			display: inline-block;
+		}
+
+		.menu p,
+		a {
+			display: inline;
+		}
+
+		.mainbox {
+			background-color: transparent;
+		}
+
+		textarea {
+			width: 100%;
+			resize: vertical;
+			tab-size: 3;
+		}
+
+		.mainbox {
+			padding-top: 70px
+		}
+
+		button {
+			margin: 0;
+		}
+
+		body {
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+
+		#out {
+			resize: none;
+		}
+	</style>
+	<script src="/noms/nom.js"></script>
+	<script src='main.js' type="module"></script>
+</head>
+
+<body>
+	<div class='mainbox'>
+		<div class='menu'>
+			<h1>Potassium Interpereter</h1><br>
+			<p id='localhost?'>Not locally hosted</p>
+			<script src='/localhostdetector.js'></script>
+			<a href='/'>Homepage</a>
+		</div>
+	</div>
+</body>
+
+</html>

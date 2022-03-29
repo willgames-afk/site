@@ -1,0 +1,23 @@
+{
+	"type": "texture",
+	"srcFiles": {
+		"all": "container.jpg"
+	},
+	"faceTextures": {
+		"all": {
+			"img": "all",
+			"coords": [
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				1.0,
+				1.0,
+				0.0,
+				1.0
+			],
+			"wrapping": "CLAMP_TO_EDGE",
+			"filter": "LINEAR"
+		}
+	}
+}

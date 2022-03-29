@@ -1,0 +1,1 @@
+1. error messsages stored in maps, not in code, so map makers can customize

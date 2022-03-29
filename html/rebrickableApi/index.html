@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Rebrickable Api Interface</title>
+    <script src="main.js"></script>
+    <script type="module" src="https://unpkg.com/brick-viewer?module"></script>
+</head>
+
+<body>
+    <div id="interface">
+        Search By
+        <select id="modeSelector" onchange="newModeSelected()">
+            <option selected value="nameSearch">Name</option>
+            <option value="idSearch">ID</option>
+        </select>
+        <div id="nameSearch">
+            Part Name: <input id="partName" type="search" oninput="textChange()">
+            <span id="currentQuery"></span>
+        </div>
+        <div id="idSearch" hidden>
+            Part ID: <input id="partID" type="number">
+            <button onclick="run();">Get Part</button>
+        </div>
+        <div id="part">
+            <img id="partImg" src="">
+        </div>
+    </div>
+    <brick-viewer src="/cardan_lift_v2_1.mpd"></brick-viewer>
+</body>
+
+</html>

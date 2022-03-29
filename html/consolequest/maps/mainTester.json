@@ -1,0 +1,44 @@
+{
+	"map": {
+		"data":[
+			[],
+			[],
+			[],
+			[],
+			[]
+		],
+		"startText": "This map was designed by Will Kam and is the Most Recent Testing map.\n",
+        "directions": {
+            "north": {
+                "x": 0,
+                "y": -1,
+                "opp": "south"
+            },
+            "south": {
+                "x": 0,
+                "y": 1,
+                "opp": "north"
+            },
+            "east": {
+                "x": 1,
+                "y": 0,
+                "opp": "west"
+            },
+            "west": {
+                "x": -1,
+                "y": 0,
+                "opp": "east"
+            }
+        }
+	},
+	"player": {
+		"x": 0,
+        "y": 0,
+        "inventory": {},
+		"lastMove": "not",
+		"char": "Y"
+	},
+	"items": {
+
+	}
+}

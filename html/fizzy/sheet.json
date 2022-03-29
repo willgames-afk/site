@@ -1,0 +1,10 @@
+{
+	"image": "spritesheet.png",
+	"sprites": {
+		"banana": [12,12,0,0],
+		"animatedThing": {
+			"data": [16,16,0,0,16,0,32,0,48,0,64,0],
+			"speed": 15
+		}
+	}
+}

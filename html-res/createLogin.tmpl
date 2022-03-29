@@ -1,0 +1,20 @@
+
+<head>
+	<link href='/resources/login.css' rel='stylesheet'>
+	<title>Create Account</title>
+</head>
+
+<h2>Create Account</h2>
+<form action='/login/createLogin/' method='POST'>
+Username <input type='text' name='username' value='$?username$'><br>
+	$?usernameErr$
+Password <input type='password' name='password'><br>
+	$?passwordErr$
+Confirm Password <input type='password' name='confirm_password'><br>
+	$?confirmPasswordErr$
+	<input type='submit' value="Create Account"><br>
+	<a href="/login/login/">Log In</a>
+</form>
+<script>
+	var loggedin = false;
+</script>

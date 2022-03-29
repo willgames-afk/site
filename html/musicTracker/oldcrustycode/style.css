@@ -1,0 +1,18 @@
+body,div {
+    margin: 0px;
+    padding: 0px;
+}
+
+td {
+    font-family: 'Source Code Pro', monospace;
+    min-height:max-content;
+}
+
+td[selected] span {
+    border-bottom: thick solid #0000FF;
+    background-color: #1c76fd;
+}
+
+td:hover {
+    background-color: #1c76fd54;
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+        <link href="assets/index.css" rel="stylesheet">
+        <!--<script src="https://unpkg.com/three@latest/build/three.js"></script>-->
+	</head>
+	<body>
+		<div id="loadingmessage" class="loadBox">
+			<svg id= "animate" width="30" height="30">
+				<path stroke="#505050" stroke-width="4" stroke-linecap="round" fill="none"
+					d="M 5,15 A 10 10 90 0 0 25, 15" transform="rotate(0)">
+					<!--<animateTransform attributeName="transform" attrubuteType="XML" type="rotate" from="0 15 15"
+						to="360 15 15" dur="1s" repeatCount="indefinite" />-->
+				</path>
+            </svg>
+            <script>
+                document.getElementById("animate").animate([
+                    {transform: "rotate(0deg)"},
+                    {transform: "rotate(360deg)"},
+                ], {
+                    duration: 1000,
+                    easing: "linear",
+                    iterations: Infinity,
+                })
+            </script>
+			<span>Loading Game Code and Assets...</span>
+		</div>
+        <script src="js/main.js" type="module"></script>
+	</body>
+</html>

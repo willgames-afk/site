@@ -1,0 +1,19 @@
+#container {
+    max-width: 640px;
+    width: 100%;
+    margin:0px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0px;
+	padding-top: 10px;
+}
+#container > * {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+}
+body {
+    margin: 0px;
+    padding: 0px;
+    border:0px;
+}

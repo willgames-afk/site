@@ -1,0 +1,15 @@
+<head>
+	<link href='/resources/login.css' rel='stylesheet'>
+</head>
+
+<h2>Login</h2>
+<form action='/login/login/' method='POST' target="_self">
+Username <input type='text' name='username' value='$?username$'><br>
+	$?usernameErr$
+Password <input type='password' name='password'><br>
+	$?passwordErr$
+	<input type='submit' value="Log In"><a class="cllink" href="/login/createLogin/">Create Account</a>
+</form>
+<script>
+	var loggedin=false;
+</script>

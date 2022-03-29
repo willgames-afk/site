@@ -1,0 +1,24 @@
+{
+	"scopeName": "source.heavystack",
+	"patterns": [{"include": "#expression"}],
+	"repository": {
+		"expression": {
+			"patterns": [{"include": "#comment"},{"include": "#symbol"},{"include": "#block-expr"}]
+		},
+		"symbol": {
+			"match": "<|>|,|:|\\.|\\^",
+			"name": "keyword.symbol"
+		},
+		"comment": {
+			"match": "[^<>,.:^$+\\-*/[\\]{}]+",
+			"name": "comment.line.character"
+		},
+		"if-expr": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": {
+				"0": {"name": ""}
+			}
+		}
+	}
+}

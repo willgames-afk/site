@@ -1,0 +1,25 @@
+rows-
+
+
+Note Octave Instrument Volume FXs
+NNO II V FFF (FFF, FFF, FFF ...)
+
+Note + Octave might be Bar- that's a stop
+
+Volume is Hexadecimal (1-F)
+
+FXs-
+Char 1 is effect
+Chars 2 & 3 are parameter
+
+you can click on instument tab to add more fx blocks
+
+
+Noise channel has 16 notes instead of 12
+
+
+
+Edit mode
+1- Puts Bar
+
+z- C

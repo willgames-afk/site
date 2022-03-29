@@ -1,0 +1,47 @@
+body {
+	margin: 0px;
+	padding: 0px;
+}
+body {
+	margin: 0px;
+	padding: 0px;
+}
+
+#blockDiagram {
+	margin: 0px;
+	padding: 0px;
+	display: contents;
+}
+
+#blockDiagram .canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: grey;
+	z-index: -1;
+	display: block;
+	margin: 0px;
+	padding: 0px;
+}
+#blockDiagram .sidebar {
+	width: 0;
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	right: 0;
+	background-color: #111;
+	overflow: hidden;
+	transition: 0.5s;
+	padding-top: 60px;
+	text-decoration: none;
+	color: #818181;
+	font-size: 12px;
+
+}
+#blockDiagram .sidebar .closebutton {
+	float: right;
+	font-size: 36px;
+	margin-right: 8px;
+	padding: 0;
+	color: #818181;
+}

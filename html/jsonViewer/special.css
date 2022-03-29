@@ -1,0 +1,46 @@
+.widget, .lightWidget {
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	color: #95c4e2;
+	/*background-color: #1e1e1e;*/
+	font-size: 11.5px;
+}
+.widget input{
+	background-color: transparent;
+	color: #c89175;
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	border: 0px;
+	font-size: 11.5px;
+}
+.widget .showhide{
+	color: #337dff;
+	font-weight: bold;
+	text-decoration: none;
+	border: solid black 1px;
+	border-radius: 5px;
+	padding:0px;
+	padding-left: 1px;
+	padding-right: 1px;
+	font-family: "Arial",sans-serif;
+	font-size: 9pt;
+	white-space: nowrap;
+	margin: 0px;
+	background-color: #4d4d4d;
+}
+.widget input[type = "number"] {
+	color: palegreen;
+}
+.lightWidget {
+	color: black;
+	background-color: white; 
+}
+.lightWidget input {
+	color: red;
+}
+
+select {
+	background-color: transparent;
+	color: #c89175;
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	border: 0px;
+	font-size: 11.5px;
+}

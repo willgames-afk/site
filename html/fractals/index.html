@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Mandelbrot Set</title>
+	<style>
+		body {
+			margin: 0px;
+			padding: 0px;
+		}
+
+		;
+	</style>
+</head>
+
+<body>
+	<script>
+		class Complex { //Complex number
+			constructor(r, i) {
+				this.r = r;
+				this.i = i;
+				return this;
+			}
+			get abs() {
+				return Math.sqrt(this.r * this.r + this.i * this.i)
+			}
+			set abs(v) {
+				console.error('Value "abs" is not settable')
+				return false;
+			}
+			static multiply(c1, c2) {
+				return new Complex(
+					c1.r * c2.r - c1.i * c2.i,
+					c1.r * c2.i + c1.i * c2.r
+				);
+			}
+			static add(c1, c2) {
+				return new Complex(c1.r + c2.r, c1.i + c2.i);
+			}
+		}
+		//console.clear();
+
+		function makeCtx(width, height) {
+			var canv = document.createElement('canvas');
+			//canv.style.position = 'absolute';
+			canv.style.top = '0px';
+			canv.style.left = '0px';
+			canv.width = width;
+			canv.height = height;
+			document.body.appendChild(canv);
+			return canv.getContext('2d');
+		}
+		function initMandel() {
+			var x1 = -2;
+			var x2 = 1;
+			var xdif = x2 - x1;
+			var y1 = -1.5;
+			var y2 = 1.5;
+			var ydif = y2 - y1;
+			var aspectRatio = xdif / ydif;
+
+			var ctx = makeCtx(window.innerWidth, window.innerWidth * aspectRatio);
+			Object.defineProperty(ctx, 'width', { get() { return this.canvas.width }, set(v) { this.canvas.width = v } });
+			Object.defineProperty(ctx, 'height', { get() { return this.canvas.height }, set(v) { this.canvas.height = v } });
+
+			var imgData = ctx.createImageData(ctx.width, ctx.height);
+
+			this.preset = 'mono-alt';
+			this.presets = [
+				'mono-alt',
+				'r-alt',
+				'g-alt',
+				'b-alt',
+				'r-plain',
+				'g-plain',
+				'b-plain',
+				'b-plain-inverted'
+			]
+
+			function r(type, i) {
+				if (type == 'r-alt' || type == 'mono-alt') {
+					if (i == 255) {
+						return 0;
+					} //else {
+					return 256 % (i + 16);
+					//}
+				} else if (type == 'r-plain') {
+					return i;
+				}
+				return 0;
+			}
+			function g(type, i) {
+				if (type == 'g-alt' || type == 'mono-alt') {
+					if (i == 255) {
+						return 0;
+					} //else {
+					return 256 % (i + 16);
+					//}
+				} else if (type == 'g-plain') {
+					return i;
+				}
+				return 0;
+			}
+			function b(type, i) {
+				if (type == 'b-alt' || type == 'mono-alt') {
+					if (i == 255) {
+						return 0;
+					} //else {
+					return 256 % (i + 16);
+					//}
+				} else if (type == 'b-plain') {
+					return i;
+				} else if (type == 'b-plain-inverted') {
+					return 255 - i;
+				}
+				return 0;
+			}
+			this.mandelbrotRow = function (x, whenDone) {
+
+				var real = x / ctx.width * xdif + x1 //Turn canvas x coord into number from -2 to 1 (where the mandlebrot set lives)
+
+				for (var y = 0; y < ctx.height; y++) {
+
+					var imaginary = y / ctx.height * ydif + y1 //Turn canvas y coord into nuber from -1 to 1 (where mandlebrot set is located)
+
+					var c = new Complex(real, imaginary); //Take our coords and turn them into a complex number
+					var z = new Complex(0, 0);
+					var end = false;
+					var i = 0;
+					for (i = 0; i < 255 && !end; i++) {
+						z = Complex.multiply(z, z); //zn+1 = z*z+c
+						z = Complex.add(z, c);
+
+						if (z.abs > 2) {
+							imgData.data[(x + (ctx.width * y)) * 4 + 0] = r(preset, i);
+							imgData.data[(x + (ctx.width * y)) * 4 + 1] = g(preset, i);
+							imgData.data[(x + (ctx.width * y)) * 4 + 2] = b(preset, i);
+							imgData.data[(x + (ctx.width * y)) * 4 + 3] = 255;
+							end = true;
+						}
+					}
+
+					if (i == 255) {
+						//If number didn't blow up after 255 iterations
+
+						imgData.data[(x + (ctx.width * y)) * 4 + 0] = r(preset, 255);
+						imgData.data[(x + (ctx.width * y)) * 4 + 1] = g(preset, 255);
+						imgData.data[(x + (ctx.width * y)) * 4 + 2] = b(preset, 255);
+						imgData.data[(x + (ctx.width * y)) * 4 + 3] = 255;
+					}
+				}
+				ctx.putImageData(imgData, 0, 0)
+				if (x != ctx.width) {
+					setTimeout(mandelbrotRow.bind(this, x + 1, whenDone), 1)
+				} else {
+					whenDone();
+				}
+			}
+			mandelbrotRow.bind(this, 0, whenDoneMandel)();
+		}
+		function initSierTri() {
+			var ctx = makeCtx(Math.min(window.innerWidth, window.innerHeight), Math.min(window.innerWidth, window.innerHeight));
+			Object.defineProperty(ctx, 'width', { get() { return this.canvas.width }, set(v) { this.canvas.width = v } });
+			Object.defineProperty(ctx, 'height', { get() { return this.canvas.height }, set(v) { this.canvas.height = v } });
+			ctx.fillStyle = 'rgb(0,0,0)';
+			ctx.fillRect(0, 0, ctx.width, ctx.height);
+			var imgData = ctx.createImageData(ctx.width, ctx.height);
+			var x = Math.floor(ctx.width/2);
+			var y = 0
+			window.setTimeout(sierTriRecursion.bind(this,x,y),0);
+		}
+		function sierTriRecursion(x, y) {
+			imgData.data[(x + (ctx.width * y)) * 4 + 0] = 255;
+			imgData.data[(x + (ctx.width * y)) * 4 + 1] = 255;
+			imgData.data[(x + (ctx.width * y)) * 4 + 2] = 255;
+			imgData.data[(x + (ctx.width * y)) * 4 + 3] = 255;
+			if (y == ctx.height) {
+				return;
+			}
+			window.setTimeout(sierTriRecursion.bind(this,x-1,y+1),0);
+			window.setTimeout(sierTriRecursion.bind(this,x+1,y+1),0);
+		}
+		initMandel();
+		initSierTri();
+		function whenDoneMandel() {
+			preset = presets[presets.indexOf(preset) + 1]
+			window.setTimeout(mandelbrotRow.bind(this, 0, whenDoneMandel), 2000)
+		}
+//ctx.putImageData(imgData,0,0)
+
+	</script>
+</body>
+
+</html>
