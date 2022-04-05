@@ -1,7 +1,8 @@
-//Loading of modules
+// TODO: fix error reporting
+// TODO: fix blog system
 
 //Load all my custom modules
-import { Template, Snippet } from  "./source/templates.mjs";
+import { TemplateSystem, Template } from  "./source/templates.mjs";
 import { errorMessages, sendErrorMessage } from "./source/errors.mjs";
 import { getUser, addUser } from "./source/users.mjs";
 import { red, green} from "./source/helpers.mjs"
@@ -18,7 +19,7 @@ const showdown = require("showdown");       // Markdown to HTML
 const katex    = require("katex");          // LATeX to HTM
 const path     = require("path");           // File Path stuff
 const pj       = path.join;                 // Shorten!
-const bcrypt  = require("bcrypt");          // Password Hashing!
+const bcrypt   = require("bcrypt");         // Password Hashing!
 
 
 
@@ -36,7 +37,7 @@ var paths = {
 	postTemplate: "post.tmpl",
 	postCardTemplate: "post-card.tmpl",
 
-	index: "index.page",
+	index: "index.tmpl",
 
 	login: "login.tmpl",
 	loginWelcome: "welcome.tmpl",
@@ -52,13 +53,9 @@ var paths = {
 //Get Commandline args
 const port = process.env.PORT || 3000;
 const public_dir = process.argv[2];
-const res_dir = process.argv[3];
+const res_dir = process.argv[3] || pj(public_dir, "/.resources/");
 if (!public_dir) {
 	console.error("I NEED A PUBLIC DIRECTORY TO SERVE!!!!");
-	exit(1);
-}
-if (!res_dir) {
-	console.error("I NEED A RESOURCE DIRECTORY TO FUNCTION!!!!");
 	exit(1);
 }
 
@@ -69,18 +66,20 @@ for (var page in paths) {
 	paths[page] = path.resolve(pj(res_dir, paths[page]));
 }
 
+//Init templates
+const templates = new TemplateSystem();
+
 //Preload pages
-const basepage =         new Template(paths.basepage, true, true); //Page Template
-const postTemplate =     new Template(paths.postTemplate, true);
-const postCardTemplate = new Template(paths.postCardTemplate, true);
-const loginTmpl =        new Template(paths.login, true);
-const welcomeTmpl =      new Template(paths.loginWelcome, true);
-const createLoginTmpl =  new Template(paths.loginCreate, true);
+const basepage =          templates.loadFile(paths.basepage); //Page Template
+const postTemplate =      templates.loadFile(paths.postTemplate);
+const postCardTemplate =  templates.loadFile(paths.postCardTemplate);
+const loginTmpl =         templates.loadFile(paths.login);
+const welcomeTmpl =       templates.loadFile(paths.loginWelcome);
+const createLoginTmpl =   templates.loadFile(paths.loginCreate);
 
-const index = new Snippet(".page", paths.index, true);
-
-//Convinience functions that depend on the above things in order to run
-function generateLoginHtml(req) {
+//Add thingamabobs
+function generateLoginHtml(obj) {
+	const req = obj.req;
 	if (req.session.loggedin) {
 		console.log(`Logged in; ${req.session.username}`)
 		return welcomeTmpl.fill({username: req.session.username});
@@ -89,6 +88,12 @@ function generateLoginHtml(req) {
 		return loginTmpl.fill();
 	}
 }
+templates.add("login", generateLoginHtml);
+
+console.log("Basepage:");
+console.log(basepage)
+
+//Convinience functions that depend on the above things in o
 function loadRes(url) {return fs.readFileSync(pj(res_dir, url))}
 function loadPub(url) {return fs.readFileSync(pj(public_dir, url))}
 
@@ -105,22 +110,15 @@ app.use(express.json());
 
 app.use((req, res, next) => {
 	if (req.method == "GET") {
-		console.log(`${green(req.method)}  ${req.path}`)
+		console.log(`${green(req.method)}  ${req.path} (${req.ip})`)
 	} else if (req.method == "POST") {
-		console.log(`${red(req.method)} ${req.path}`)
+		console.log(`${red(req.method)} ${req.path} (${req.ip})`)
 	} else {
-		console.log(`${req.method}  ${req.path}`)
+		console.log(`${req.method}  ${req.path} (${req.ip})`)
 	}
 	next();
 });//Log all server requests (Debug Server only)
 
-app.get('/', (req, res) => {
-	//console.log("handled by index handler")
-	res.type("html");
-	
-	res.send(basepage.fill({ content: index, login: generateLoginHtml(req) }));
-	
-});
 
 app.post("/login/login", (req, res) => {
 	const username = req.body.username;
@@ -150,10 +148,10 @@ app.post("/login/login", (req, res) => {
 				usernameErr = errorMessages.noUserFound;
 			}
 			console.log(`Login Failed, ${passwordErr} ${usernameErr}`)
-			res.send(loginTmpl.fill({ usernameErr: usernameErr, passwordErr: passwordErr, username: username }))
+			res.send(loginTmpl.fill({ usernameErr,passwordErr, username }))
 		})
 	} else {
-		res.send(loginTmpl.fill({ usernameErr: usernameErr, passwordErr: passwordErr, username: username }))
+		res.send(loginTmpl.fill({ usernameErr, passwordErr, username }))
 	}
 })
 app.get("/login/login", (req,res) => {
@@ -162,7 +160,7 @@ app.get("/login/login", (req,res) => {
 		res.redirect("/login/welcome")
 	} else {
 		//Serve login page (With no errors)
-		res.send(loginTmpl.fill({})) //Send Blank login page (no errors)
+		res.send(loginTmpl.fill()) //Send Blank login page (no errors)
 	}
 })
 app.get("/login/welcome", (req,res) => {
@@ -229,10 +227,10 @@ app.post("/login/createLogin", (req,res) => {
 		})
 	} else {
 		res.send(createLoginTmpl.fill({
-			usernameErr: usernameErr,
-			passwordErr: passwordErr,
-			confirmPasswordErr: confirmPasswordErr,
-			username: username
+			usernameErr,
+			passwordErr,
+			confirmPasswordErr,
+			username
 		}))
 	}
 })
@@ -245,16 +243,17 @@ app.use("/login/logout", (req,res) => {
 //Resources
 app.use('/resources/', (req, res) => {
 	//console.log("handled by resources handler")
-
-	if (path.dirname(req.path) == "secure/") {
+	
+	if (path.dirname(req.url) == "/secure") {
+		res.type("text/plain");
 		res.send("Lol, no.");
 	}
-
 
 	res.type(path.extname(req.url)) //Send correct filetype
 	res.send(loadRes(req.url));
 })
 
+/*
 //  blog/
 app.get("/blog/", (req, res) => {
 	//console.log("handled by blog homepage handler")
@@ -272,17 +271,17 @@ app.use("/blog/imgs", (req, res) => {
 	}
 	res.type(path.extname(req.url));
 	res.send(file);
-})
+})*/
 
 // blog/** not including /imgs or /
-app.use('/blog/', (req, res) => {
+app.use('/blog/', (req, res, next) => {
 	//console.log("Handled by Blog Handler")
 	var url = pj(blog_dir, `${req.url}.md`)
 	var rawfile
 	try {
 		rawfile = fs.readFileSync(url); //Get the file
 	} catch (err) {
-		sendErrorMessage(err, res);
+		next();
 		return;
 	}
 	const fileObj = splitFile(rawfile.toString());
@@ -315,52 +314,45 @@ app.use('/blog/', (req, res) => {
 
 //Anything in the public folder will be served from the root directory
 app.use('/', (req, res) => {
-	console.log("Handled by bulk web handler")
 	var file;
-3
-	//Attempt to load file
-	var name = path.extname(req.url);
+
+	var ext = path.extname(req.url);
 	try {
-		if (name === "") { //Automatically serve index.html s
-			//console.log(`Directory; Serving local index.html (${pj(public_dir, req.url, "index.html")})`)
-			file = fs.readFileSync(pj(public_dir, req.url, "index.html"));
-		} else {
-			file = fs.readFileSync(pj(public_dir, req.url))
-			if (name == ".page") { 
+		switch (ext) {
+			case "":
+				try {
+					file = fs.readFileSync(pj(public_dir, req.url, "index.html"));
+				} catch (e) {
+					if (e.code == "ENOENT") {
+						file = basepage.fill({
+							content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
+						}, {req});
+					} else {
+						throw e;
+					}
+				}
+				break;
+			case ".page":
 				file = basepage.fill({
-					content: new Snippet(".page",pj(public_dir,req.url),true),
-					login: generateLoginHtml(req)
+					content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
 				});
-			}
+				break;
+			case ".tmpl":
+				file = templates.loadFile(pj(public_dir, req.url)).fill({},{req});
+				break;
+			default:
+				res.sendFile(req.url,{root: public_dir});
+				return;
 		}
-
-		//If error is thrown, send error page
 	} catch (err) {
-		if (err.code == "ENOENT" && fs.existsSync(paths.pagenotfound)) {
-			console.log("404 not found")
-			console.log(paths.pagenotfound);
-			res.status(404)
-			res.send("err: not found");
-			return
-		}
-
-		sendErrorMessage(err, res);
-		return;
+		console.log("error: ", err)
+		file = "Some kind of error occured: " + err.toString() + "<br>TODO: FIX THIS SCREEN!"
 	}
-
-	//If no errors have been thrown, send file (with correct filetype)
-	if (name === "" || name === ".page") {
-		res.type("html")
-		res.send(file);
-	} else {
-		res.type("." + path.extname(req.url)) //Send correct filetype
-		res.send(file);
-	}
+	res.type("html");
+	res.send(file);
 })
-
-app.get("/backend")
 
 //Start the app
 app.listen(port, () => {
-	console.log(`Markdown Web Server listening at http://localhost:${port} \nWith resources at '${res_dir}' and site at '${public_dir}'`);
+	console.log(`Willgames Web Server listening on http://localhost:${port} \n at ${path.resolve(public_dir)}`);
 })

@@ -1,26 +1,21 @@
 {
-	"name": "willgames-server",
-	"version": "1.0.1",
-	"description": "",
+	"name": "willgames-site",
+	"version": "0.0.1",
+	"description": "a site and server.",
 	"main": "server.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node server.mjs",
-		"publish-patch": "npm version patch && npm publish",
-		"publish-minor": "npm version minor && npm publish"
+		"start": "node server.mjs ./public"
 	},
 	"keywords": [],
 	"author": "William Kam",
 	"license": "ISC",
 	"dependencies": {
 		"bcrypt": "^5.0.1",
-		"express": "^4.17.1",
+		"express": "^4.17.3",
 		"express-session": "^1.17.2",
 		"fs": "0.0.1-security",
 		"katex": "^0.13.11",
-		"showdown": "^2.0.0-alpha"
-	},
-	"bin": {
-		"mdwebserver": "server.js"
+		"showdown": "^2.0.3"
 	}
 }

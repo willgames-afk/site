@@ -4,7 +4,7 @@
   "description": "A simulator for a modern retro computer that doesn't exist.",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "echo ERROR.",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "William Kam",
