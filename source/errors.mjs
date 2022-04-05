@@ -30,8 +30,8 @@ export const errorMessages = {
 }
 
 
-export function sendErrorMessage(err, res) {
-	console.log("Failed, " + err.code)
+export function sendError(err, res) {
+	console.error(err);
 	res.type("html");
 	res.send("<h1>Error</h1>" + NLtoBR(errorMessages[err.code]));
 }

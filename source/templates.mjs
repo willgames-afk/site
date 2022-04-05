@@ -1,5 +1,3 @@
-// TODO: Bring back <head> collection!
-
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
@@ -15,7 +13,7 @@ export class TemplateSystem {
 		if (typeof val == "function") {
 			this.globals[name] = val;
 		} else {
-			this.globals[name] = ()=>{return val};
+			this.globals[name] = () => { return val };
 		}
 	}
 
@@ -26,7 +24,7 @@ export class TemplateSystem {
 	}
 
 	loadFile(path, ...args) {
-		return this.load(fs.readFileSync(path,{encoding: "utf-8"}), ...args)
+		return this.load(fs.readFileSync(path, { encoding: "utf-8" }), ...args)
 	}
 }
 
@@ -35,10 +33,10 @@ export class Template {
 		this.parent = parent;
 		this.file = text;
 	}
-	fill(fparams,paramParams) {
+	fill(fparams, paramParams) {
 		var out = this.file;
 
-		//console.log("attempting to match with file " + out)
+
 
 		while (true) {
 			const match = out.match(/\$(\?)?(\w+)\$|<\$(\w+)\$>/); //Yay magic!
@@ -46,26 +44,41 @@ export class Template {
 			//match[1] // optional or not
 			//match[2] // var name
 			//match[3] // global name
-			
+
 			if (!match) {
 				break;
 			}
+			var fillVal;
 			if (match[2]) {
 				if (!fparams || !fparams[match[2]]) {
 					if (match[1]) {
 						//All is good, it was optional.
-						out = out.replace(match[0],"");
+						out = out.replace(match[0], "");
 					} else {
 						console.error("ERR: Unpassed parameter " + match[2]);
-						out = out.replace(match[0],"");
+						out = out.replace(match[0], "");
 					}
 					continue;
 				}
-
-				out = out.replace(match[0], fparams[match[2]]);
+				fillVal = fparams[match[2]];
 			} else if (match[3]) {
-				out = out.replace(match[0], this.parent.globals[match[3]](paramParams));
+				fillVal = this.parent.globals[match[3]](paramParams)
 			}
+
+			console.log("FV:", fillVal)
+
+			var phead = fillVal.match(/<head>([\s\S]*)<\/head>/);
+			var thisHead = out.match(/<head>([\s\S]*)<\/head>/);
+			if (phead) {
+				if (!thisHead) {
+					out = "<head></head>" + out;
+					thisHead = out.match(/<head>([\s\S]*)<\/head>/);
+				}
+				out = out.replace(/<head>[\s\S]*<\/head>/, "<head>"+thisHead[1] + phead[1]+"</head>");
+				fillVal = fillVal.replace(/<head>[\s\S]*<\/head>/,"")
+			}
+
+			out = out.replace(match[0], fillVal);
 		}
 
 		return out;

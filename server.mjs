@@ -1,11 +1,14 @@
-// TODO: fix error reporting
-// TODO: fix blog system
+// TODO: Blog Cards
+// TODO: Import more finished projects from replit.com
+// TODO: Finish Login System
+// TODO: Implement Comment System
 
 //Load all my custom modules
-import { TemplateSystem, Template } from  "./source/templates.mjs";
-import { errorMessages, sendErrorMessage } from "./source/errors.mjs";
+import { TemplateSystem } from  "./source/templates.mjs";
+import { errorMessages, sendError } from "./source/errors.mjs";
 import { getUser, addUser } from "./source/users.mjs";
 import { red, green} from "./source/helpers.mjs"
+import { splitFile, convertLatex } from "./source/blog.mjs"
 
 //Get reqire so I can load everything else
 import { createRequire } from "module";
@@ -26,7 +29,7 @@ const bcrypt   = require("bcrypt");         // Password Hashing!
 const sessionConfig = {
 	name: "session-id",
 	cookie: {maxAge: 1000 * 60 * 60 * 24 * 2},
-	secret: "changeth1s2be_moresecurel&ter",
+	secret: "changeth1s2be_moresecurel&ter@$^)!^",
 	resave: false,
 	saveUninitialized: false,
 }
@@ -89,13 +92,16 @@ function generateLoginHtml(obj) {
 	}
 }
 templates.add("login", generateLoginHtml);
+const loadingWidget =  loadRes("loading.tmpl");
+templates.add("loading", ()=>{
+	return loadingWidget
+})
 
 console.log("Basepage:");
 console.log(basepage)
 
 //Convinience functions that depend on the above things in o
-function loadRes(url) {return fs.readFileSync(pj(res_dir, url))}
-function loadPub(url) {return fs.readFileSync(pj(public_dir, url))}
+function loadRes(url) {return fs.readFileSync(pj(res_dir, url), {encoding: "utf-8"})}
 
 
 //App Init
@@ -171,7 +177,7 @@ app.get("/login/welcome", (req,res) => {
 	}
 })
 app.get("/login/createLogin", (req,res) => {
-	res.send(createLoginTmpl.fill({}));
+	res.send(createLoginTmpl.fill());
 })
 
 app.post("/login/createLogin", (req,res) => {
@@ -253,50 +259,29 @@ app.use('/resources/', (req, res) => {
 	res.send(loadRes(req.url));
 })
 
-/*
-//  blog/
-app.get("/blog/", (req, res) => {
-	//console.log("handled by blog homepage handler")
-	res.send(basepage.fill({ content: "Blog Homepage", login: generateLoginHtml(req)}))
-})
-// blog/imgs/**
-app.use("/blog/imgs", (req, res) => {
-	//console.log("handled by blog image handler")
-	var file;
-	try {
-		file = loadPub(pj("blog/imgs", req.path)); //Get the file
-	} catch (err) {
-		sendErrorMessage(err, res);
-		return;
-	}
-	res.type(path.extname(req.url));
-	res.send(file);
-})*/
 
-// blog/** not including /imgs or /
+// Deal with md files in blog directory
 app.use('/blog/', (req, res, next) => {
 	//console.log("Handled by Blog Handler")
 	var url = pj(blog_dir, `${req.url}.md`)
 	var rawfile
 	try {
-		rawfile = fs.readFileSync(url); //Get the file
+		rawfile = fs.readFileSync(url, {encoding: "utf-8"}); //Get the file
 	} catch (err) {
 		next();
 		return;
 	}
 	const fileObj = splitFile(rawfile.toString());
 	if (!fileObj.timecode) {
-		//var timecode = addTimecode(url);
-		throw "TODO: Add timecode insertion";
+		var timecode = addTimecode(url, fs);
+		//throw "TODO: Add timecode insertion";
 	} else {
 		//console.log(fileObj.timecode)
 		var timecode = fileObj.timecode;
 	}
 
-	const latexConverted = convertLatex(fileObj.file)    //Convert latex to html
-
+	const latexConverted = convertLatex(fileObj.file, katex)    //Convert latex to html
 	const postContent = converter.makeHtml(latexConverted); //convert markdown to html
-
 	const date = new Date(parseInt(timecode, 10)).toDateString(); //Turn post date into human-readable string
 
 	const page = basepage.fill({
@@ -305,10 +290,10 @@ app.use('/blog/', (req, res, next) => {
 			title: fileObj.title,
 			subtitle: fileObj.subtitle,
 			postdate: date
-		}),
-		login: generateLoginHtml(req)
-	})
+		})
+	},{req})
 
+	res.type("html");
 	res.send(page);
 })
 
@@ -321,7 +306,7 @@ app.use('/', (req, res) => {
 		switch (ext) {
 			case "":
 				try {
-					file = fs.readFileSync(pj(public_dir, req.url, "index.html"));
+					file = fs.readFileSync(pj(public_dir, req.url, "index.html"),{encoding: "utf-8"});
 				} catch (e) {
 					if (e.code == "ENOENT") {
 						file = basepage.fill({
@@ -345,8 +330,9 @@ app.use('/', (req, res) => {
 				return;
 		}
 	} catch (err) {
-		console.log("error: ", err)
-		file = "Some kind of error occured: " + err.toString() + "<br>TODO: FIX THIS SCREEN!"
+		sendError(err, res)
+		console.log(red("Error") + ": ", err)
+		return;
 	}
 	res.type("html");
 	res.send(file);
