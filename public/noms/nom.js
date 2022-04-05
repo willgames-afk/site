@@ -304,7 +304,7 @@ class Things {
             this.canvas.width = width;
         }
 
-		console.log("Resize; ", this.canvas.height, window.innerHeight)
+		//console.log("Resize; ", this.canvas.height, window.innerHeight)
         this.canvas.height = window.innerHeight;
         if (document.body.scrollHeight > window.innerHeight) {
             this.canvas.height = document.body.scrollHeight;
