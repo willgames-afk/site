@@ -347,7 +347,7 @@ function wrapper() {
     },
     e() {
       //Displays the exits of a room.
-      displayText(currentCell.exit, '', false);
+      displayText('', '', true);
     },
     map() { //WIP
       textmap = [];
@@ -399,7 +399,7 @@ function wrapper() {
             console.clear();
             console.log(message.mapLoadSuccess);
             startText = map.startText;
-            text = map.startText + '\n' + helpText + '\n' + map.data[player.y][player.x].desc;
+            displayText(map.startText + '\n' + message.help + '\n' + currentCell.desc);
           }
         }
       } else {
@@ -408,7 +408,7 @@ function wrapper() {
     },
     clear() {
       console.clear()
-      displayText(helpText + map.data[player.y][player.x].desc)
+      displayText(message.help + currentCell.desc)
     },
     rem() {
       displayText('\nYou remember when you visited this area...\n%c' + currentCell.desc, 'font-style: italic;');
@@ -465,12 +465,18 @@ function wrapper() {
   //   Function that takes care of displaying text.
   //   txtras is short for text extras. 
   function displayText(text = '', txtras = '', displayExits = true) {
-    console.log(text, txtras);
-    if (displayExits && currentCell.exit.length > 0) {
-      console.log(`\nPossible Exits: ${currentCell.exit.join(', ')}.`); //txtras);
-    } else {
-      console.log("Possible Exits: None.")
-    }
+	if (txtras) {
+		console.log(text, txtras);
+	} else if (text) {
+		console.log(text);
+	}
+	if (displayExits) {
+		if (currentCell.exit.length > 0) {
+		console.log(`\nPossible Exits: ${currentCell.exit.join(', ')}.`); //txtras);
+		} else {
+		console.log("Possible Exits: None.")
+		}
+	}
   }
 
   //Initializing
