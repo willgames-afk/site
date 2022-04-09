@@ -1,3 +1,12 @@
-.post {
+div.post {
 	text-align: center;
+	display: inline-block;
+	background-color: lightgray;
+	padding: 5px;
+}
+div.post h1.title {
+	margin-bottom: 3px;
+}
+div.posts {
+	display: inline-block;
 }

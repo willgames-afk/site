@@ -38,20 +38,30 @@ function updateColorButtons() {
 		return
 	}
 }
-function generateLogin() {
-	var loginDiv = document.getElementById("login");
-	if (!loginDiv) {
-		return;
-	}
-
-	var req = document.xml
-}
 
 //LOADERS- These load external content after the rest of the page has loaded.
 function loadBlogPosts() {
-	console.error("TODO: Load blog post cards")
-	/*var req = new XMLHttpRequest();
-	req.open("")*/
+	var select = document.querySelector("select.posts");
+	//alert(select.value)
+	
+	var req = new XMLHttpRequest();
+	req.open("GET", location.protocol + "//"+location.hostname + `/blog/cards?sort=${select.value}&n=10`);
+	req.addEventListener("loadend",(e) => {
+		//alert(req.responseText);
+		//alert("HI!")
+		//alert(req.responseText)
+	
+		var resp = JSON.parse(req.responseText);
+		var el = document.querySelector("div.posts");
+		//alert(el)
+		el.innerHTML = ""
+		for (var i=0;i<resp.length;i++) {
+			
+			el.innerHTML += resp[i]//.replace(/\\n/,"\n").replace(/\\t/,"\t").replace();
+		}
+		window.noms.resize();
+	})
+	req.send();
 }
 
 //HELPERS- helper functions to make everything else run smoothly
@@ -68,10 +78,10 @@ function hextorgb(hex) {
 function onDOMLoad() {
 	updateLocalhostDetector();
 	updateColorButtons();
-	generateLogin();
 }
 function onFullLoad() {
 	loadBlogPosts();
+	document.querySelector("select.posts").addEventListener("input",loadBlogPosts);
 }
 
 

@@ -65,7 +65,7 @@ export class Template {
 				fillVal = this.parent.globals[match[3]](paramParams)
 			}
 
-			console.log("FV:", fillVal)
+			//console.log("FV:", fillVal)
 
 			var phead = fillVal.match(/<head>([\s\S]*)<\/head>/);
 			var thisHead = out.match(/<head>([\s\S]*)<\/head>/);

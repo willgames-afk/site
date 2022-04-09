@@ -1,0 +1,17 @@
+body {
+	tab-size: 4;
+}
+#runstop{
+	margin: 0px 50px 2px 0px;
+}
+#export {
+	margin: 0px 20px 2px 0px;
+}
+#input {
+	resize: none;
+	width: 95%
+}
+#output {
+	resize: none;
+	width: 95%
+}

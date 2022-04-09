@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>HeavyStack Interpereter</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+	<p>HeavyStack is a programming language I created for fun- It's like Brainf*ck but more annoying and more complecated.</p>
+	<p>This is an interpereter for HeavyStack- type in code in the top, and it spits out the result in the bottom when you hit
+		Run. It autosaves your code locally as you type, so it won't be deleted on an accidental page reload. It's also 
+		programmed to give the browser time to do its thing- If you code in an infinite loop it won't crash the page. Finally, 
+		there's an export button to save the program as a file (for more permanent storage)</p>
+    <textarea id="input" spellcheck=false></textarea>
+    <br><button id = "runstop">Run</button><button id="export">Export</button>
+	<br><textarea id="output" readonly ></textarea>
+	<script src="main.js"></script>
+	<p>
+		The language consists entirely of symbols, which all operate on The Stack and The Accumulator.
+	</p>
+	<p>
+		The Accumulator (Henceforth abbreviated to ACC) usually contains a single number.
+		You can increment it by 1 using `.`, and decrement it using `,`. Also, keep in mind that it is set to a random number 
+		on program start- It does not start out as 0.
+	</p>
+	<p>
+		But one number is not enough- we need more! So, you can use `&lt;` to push the ACC onto a FIFO data structure refered to 
+		The Stack. FIFO, for those who aren't aware, means First In First Out. You can pop data off the stack using `&gt;`. Finally,
+		you can use `$` to swap the top 2 elements on the stack.
+	</p>
+	<p>
+		Just incrementing and decrementing isn't cool enough, so I've included 5 math operators- + for addition, - for Subtraction,
+		* for Multiplication, / for division, and % for modulo (Division but keep the remaindier instead of long dividing). <br>
+		All of them work in the same way:
+	</p>
+	<ol>
+		<li>Pop both operands off the stack</li>
+		<li>Perform their operation</li>
+		<li>Store the result in ACC</li>
+	</ol>
+	<p>
+		Watch out for the order in which it removes operands- It will first pop the leftmost operand, then the rightmost-<br>
+		If I had the stack `10, 5` with 5 being the top element, and tried to do a subtraction, I'd get -5. <br>
+		Numbers can be positive or negative, and aren't confined to the integers- You can get numbers with decimal places. <br>
+		Division by 0 puts a special number type called NaN in the ACC- more about that later.
+	</p>
+	<p>
+		What if you want to print something? Well, you can output the current value of the ACC as a UTF-16 code unit using `^`. 
+		Eventually you'll also be able to recieve a character of input using `?`, but I haven't done that yet.
+	</p>
+	<p>
+		This is great and all, but there are no loops. Luckily, you've got Curly Braces It will jump backwards from a `}` to a
+		matching `{`- In this example: `{  {} }`, the final `}` would jump all the way back to the first `{`. <br><br>
+
+		There's also Square Brackets- It will skip the code inside a pair of these if the ACC is exactly 0.
+	</p>
+	<p>With that, we have a fairly capable system, but there's 1 fatal flaw- We can only work with 3 things at a time.
+	I can mess with the top and 2nd thing down in the stack, and have something in the ACC- That's 3 things. If I want to get
+	access to anything below that, I have to get rid of one of those 3 values. Luckily, there's one final feature: Blobs!<br><br>
+
+	The `:` function will take everything off the top of the stack until it hits a NaN. It'll put all of those numbers (and the NaN) 
+	into a new FIFO Queue, AKA Stack, AKA Blob and then put that blob into the ACC.
+	</p>
+  	<p>
+	All the stack operations work as normal on blobs, but they're treated like 1 element.
+	All the math operations treat blobs like 0- So does `^`, `.`.
+	`[` treats blobs like 0s unless they have only 2 elements- this is useful for detecting the end of a blob.
+	`,` will remove the top element from the blob and place it onto the top of the stack. This is the element that was deepest in 
+	the stack when the blob was blobified.
+	Finally, `:` will extend a blob in the ACC if there's already one there.		
+	</p>
+	<hr>
+	<p>
+		Here's some example programs:
+		
+	</p>
+	<input value="
+		sadfsadf\n
+		
+		
+		sdafsdf" readonly>
+  </body>
+</html>

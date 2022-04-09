@@ -1,31 +1,29 @@
 import {replace} from './helpers.mjs';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
-export function getPosts() {
+const fs = require("fs");
+const path = require("path");
 
-	const _dir = fs.readdirSync(blog_dir, { withFileTypes: true });
+export function getPosts(blogDir) {
+
+	const _dir = fs.readdirSync(blogDir, { withFileTypes: true });
 	var dir = [];
 	for (var i = 0; i < _dir.length; i++) {
 		if (path.extname(_dir[i].name) == ".md") {
-			dir.push({ name: _dir[i].name });
+			var obj = {name: _dir[i].name.substring(0,_dir[i].name.length-3)};
+			var d = splitFile(fs.readFileSync(path.join(blogDir, _dir[i].name),{encoding: "utf-8"}));
+			if (!d.timecode) {
+				d.timecode = Date.now();
+				addTimecode(path.join(blogDir, _dir[i].name),fs)
+			}
+			obj.timecode = d.timecode;
+			dir.push(obj);
 		}
 	}
 	return dir;
 }
 
-export function getCardsBySort(sortType) {
-
-}
-
-export function getPostCard(postname, timeZone) {
-	var url = path.join(blog_dir, postname);
-	var parsed = splitFile(fs.readFileSync(url).toString()); //Get the file
-	return postCardTemplate.fill({
-		title: parsed.title,
-		subtitle: parsed.subtitle,
-		date: new Date(parsed.timecode).toLocaleDateString("en-US", { timeZone: timeZone || 'America/Los_Angeles' })
-	})
-
-}
 export function addTimecode(filePath, fs) { //Inserts a timecode into a file
 	var code = Date.now();
 	var fileData = fs.readFileSync(filePath).toString();
@@ -36,7 +34,7 @@ export function addTimecode(filePath, fs) { //Inserts a timecode into a file
 	var file = fs.openSync(filePath, 'r+');
 	var newFileEnd = code + "\n" + fileEnd;
 	fs.writeSync(file, newFileEnd, insertIndex); //Replaces the end of the file with the timecode, followed by the rest of the file.
-	fs.close(file);
+	fs.closeSync(file);
 	return code;
 }
 
@@ -51,10 +49,10 @@ export function splitFile(poststring) { //Splits a md post into metadata and fil
 	const timecode = poststring.substring(newIndex, index);
 	const file = poststring.substring(index);
 	return {
-		title: title,
-		subtitle: subtitle,
-		timecode: timecode,
-		file: file
+		title,
+		subtitle,
+		timecode,
+		file
 	}
 }
 

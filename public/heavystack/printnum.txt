@@ -1,0 +1,51 @@
+<
+
+
+Prints a number
+expects N on stack
+
+<<-< store a 0 to terminate string
+$    Get N back on top
+{
+
+stack is (chars, n)
+<<-
+"""""<<+  ACC = 10
+<$ Store it for later (cs,10,n)
+
+<$<       cs,10, 10,n,10
+$>        cs,10, 10, 10
+<$<       cs,10, 10, n, 10, n
+%         Get first digit (cs,10,10,n)
+$<$      cs, 10, n, d, 10
+>        ACC = 10
+< <<+ <<+ <+ '' ACC = 48
+
+<$><$<   Stack = cs, 10, n,d,48,d
++       get char corrosponding to d (stack is cs, 10,n,d)
+<$>$<   Stack manip (stack is cs, 10, c, n,d)
+
+$-$<      Subtract that digit
+
+Stack is cs, 10, n minus d
+
+[        If there's still a number left,
+/<       Get rid of the 0 (stack has c, new n)
+}        Keep going
+]      Otherwise
+
+stack is cs, 10, n minus d
+
+>>   Get rid of extra stuff on stack
+
+
+
+And now we print (In correct order!)
+{
+>
+[
+^}
+]
+
+Compressed:
+<<-<${<<-"""""<<+<$<$<$><$<%$<$><<<+<<+<+''<$><$<+<$>$<$-$<[/<}]>>{>

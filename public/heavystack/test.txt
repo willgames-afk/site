@@ -1,0 +1,221 @@
+Print Hi!
+
+
+> Clear ACC
+.. ACC = 2
+<<* Square it to 4
+<<+ Double it to 8
+<   Put 8 on the stack
+
+,,,,, Subtract 5 from 8 to get 3
+<*     Multiply 8 by 3 to get 24
+<$>    Put 24 on the stack, then swap it with nothing to get a zero, then stick that zero in ACC
+...    Get 3 in the ACC
+<*     Multiply it to get 72
+
+^      Print it as a character 
+
+$>
+..... 5
+<<*   5*5 = 25
+<<+   25 + 25 = 50
+<<+   50 + 50 = 100
+..... 100 + 5 = 105
+
+^
+
+condensed:
+>..<<*<<+<,,,,,<*<$>...<*^
+$>.....<<*<<+<<+.....^
+
+---------------------------------------
+Output a random number and decrement it to zero, 
+printing each number.
+
+< Save random number to stack
+
+""""" 5
+<   [RND, 5]
+<<+ [RND, 5, 10]
+$   [RND, 10, 5]
+<<*   square to 25
+<<+   double to 50
+''    Minus 2 to 48
+(RND, 10)
+$<     Store it for later
+(10, RND, 48) 48
+
+$> Get RND back in ACC
+$
+
+Stack should look like this
+(48,10)
+
+{ Setup loop return
+' Decrement ACC
+< Save ACC (48,10,Num)
+:<''< ((48,10,Num),48,10,num)
+$>$>$  (Num,(48,10,Num)) ACC = 48
+<<-<$    (Num, 0, (48,10,Num))
+>''<   (Num, 0, 48, 10, Num)
+
+Stack should be (48,10,Num)
+$< (48,Num,10,Num)
+$><$<$ (48,Num,10,10,Num)
+%  (48,Num,10) ACC= Digit one of Num
+<: () ACC = [0,48,Num,10,D1]
+'''$'$  (Num,10,48) D1
+<$>    (Num,10,D1) 48
+<$<    (Num,10,48,D1,48) 48
+$><$<  (Num,10,48,D1,48,D1) D1
++      (Num,10,48,D1) ACC= Digit that corrosponds to D1
+^ Print it (FINALLY)
+
+
+
+[ If it's zero, exit the loop
+} Jump back to loop
+] (loop exit position)
+
+condensed:
+{,^[}]
+
+---------------------------------------
+Count up to a random number (Opposite of above)
+
+
+<<<< Put RV on stack x4
+-   Subtract RV from itself to get zero
+
+There are now 2x RV on stack and ACC is 0
+
+{
+. Inc ACC
+^ Print it
+< ACC on Stack x1
+$ Swap it so RV is on top
+< ACC on Stack x2
+
+Stack now looks like this:
+ACC
+RN
+ACC
+RN
+
+- Subtract the top ACC-RN pair
+[ Break if 0
+
+Stack now looks like this
+ACC
+RN
+
+$   Stack ACC, RN
+><   ACC now has RN with no stack change
+$<$   Stack now RN, RN, ACC
+>     
+
+Stack now Correctly Set up with 2 copies of RN and with
+counter in ACC, so we can loop
+}
+]
+
+Condensed:
+<<<<-{.^<$<-[$><$<$>}]
+
+------------------------------------
+FizzBuzz
+Count up from 0
+Numbers divisible by 3 = Fizz
+Numbers divisible by 5 = Buzz
+Numbers divisible by both = FizzBuzz
+
+> Clear ACC
+...< Stick a 3 on the stack
+..<  Stick a 5 on the stack
+><<- Clear the ACC
+
+Stack   ACC
+5        0
+3
+
+{
+. Increment Count by 1
+
+Stack: 3, 5
+$ Get 3 on TS (Stack: 5, 3)
+< Save Count to stack (Stack: 5, 3, C)
+$ Get 3 back on the TS (Stack: 5, C, 3)
+>$<$ Duplicate the 3 while keeping C on TS (Stack: 5,3,3,C)
+>    Get C (Stack: 5,3,3)
+<$<  Duplicate it (plus stack management) (Stack: 5,3,C,3,C)
+%    Do a Modulo (Stack: 5,3,C)
+[    If it's not zero
+    ><^ Print C
+    <<-, ACC = -1
+]
+.  ACC = 1 if was 0, and 0 if not
+[
+Otherwise Print Fizz
+    .....<<<< (5,5,5,5)
+    *<<       (5,5,25,25)
+    +<<       (5,5,50,50)
+    +<        (5,5,100)
+    +         (5) ACC= 105
+    @          Print F
+
+    ><<< (5,5,5)
+    ,,,< (5,5,5,2)
+    $<   (5,5,2,5,2)
+    +    (5,5,2,7)
+    *<   (5,5,14)
+    *    (5), ACC = 70
+    @    Output i
+
+    
+
+    ><<<     (5,5,5)
+    *<        (5,25)
+    *        ACC has 125 (stack Relatively empty)
+    ,,,      ACC has 122
+    @@   Output Z(twice)
+]
+(Stack has 5,3,C)
+>$<   (3,5,C)
+$>$   (3,5,C) ACC = 5
+<$    (3,5,5,C)
+><$<   (3,5,C,5,C)
+%    Do a Modulo (Stack: 3,5,C)
+[
+>$< Fix Stack (5,3,C)
+    <<- Clear ACC
+    }   
+]
+>$< Fix Stack (5,3,C)
+    <<- Clear ACC
+
+    Print Buzz
+    ...<<<<<<< (3,3,3,3,3,3,3)
+    *<  (3,3,3,3,3,9)
+    *<  (3,3,3,3,27) 
+    +<< (3,3,3,30,30)
+    +<  (3,3,3,60)
+    +<  (3,3,63)
+    +   (3) ACC = 66
+    @  B!
+
+    >..<<<<<< (5,5,5)
+    *,*<    (125) ACC = 125
+    ..     ACC = 127
+    @ u!
+
+    >,,,      ACC has 122
+    @@   Output Z(twice)
+
+}
+
+----------------------------
+
+Usefull Stuff
+
+><<- Clear ACC to 0
+><</ Clear ACC to 1 (Sometimes might break, divide by 0)
