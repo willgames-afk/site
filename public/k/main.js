@@ -47,52 +47,118 @@ function pWhileToken(input, regex) {
 	return [res,rem];
 }
 
-var counter = 0;
-function ns(reset) {
-	console.log(this)
-	if (reset) {
-		counter = 0;
+const RIGHT = Symbol();
+const LEFT = Symbol();
+
+var intrinsics = [
+	{
+		_aso: RIGHT,
+		lnot: {name: "!",  sig: [["Bool"],        ["Bool"]]},
+		bnot: {name: "~",  sig: [["Num"],         ["Num"]]},
+		neg:  {name: "-",  sig: [["Num"],         ["Num"]]},
+		inc:  {name: "++", sig: [["Num"],         ["Num"]]},
+		dec:  {name: "--", sig: [["Num"],         ["Num"]]},
+	},{
+		_aso: RIGHT,
+		pow:  {name: "**", sig: [["Num", "Num"],  ["Num"]]}
+	},{
+		_aso:LEFT,
+		mul:  {name: "*",  sig: [["Num", "Num"],  ["Num"]]},
+		div:  {name: "/",  sig: [["Num", "Num"],  ["Num"]]},
+		mod:  {name: "%",  sig: [["Num", "Num"],  ["Num"]]},
+	},{
+		_aso:LEFT,
+		add:  {name: "+",  sig: [["Num", "Num"],  ["Num"]]},
+		sub:  {name: "-",  sig: [["Num", "Num"],  ["Num"]]},
+	}, {
+		_aso:LEFT,
+		shl: {name: "<<", sig: [["Num", "Num"],  ["Num"]]},
+		shr: {name: ">>", sig: [["Num", "Num"],  ["Num"]]},
+	}, {
+		_aso:LEFT,
+		llt: {name: "<",  sig: [["Num", "Num"],  ["Bool"]]},
+		lte: {name: "<=", sig: [["Num", "Num"],  ["Bool"]]},
+		lgt: {name: ">",  sig: [["Num", "Num"],  ["Bool"]]},
+		lge: {name: ">=", sig: [["Num", "Num"],  ["Bool"]]},
+	}, {
+		_aso:LEFT,
+		equ: {name: "==", sig: [["Any", "Any"],  ["Bool"]]},
+		neq: { name: "!=", sig: [["Any", "Any"],  ["Bool"]]},
+	}, {
+		_aso:LEFT,
+		band: {name: "&",  sig: [["Num", "Num"],  ["Num"]]},
+	}, {
+		_aso:LEFT,
+		bxor: {name: "^",  sig: [["Num", "Num"],  ["Num"]]},
+	},{
+		_aso:LEFT,
+		bor: {name: "|",  sig: [["Num", "Num"],  ["Num"]]},
+	},{
+		_aso:LEFT,
+		land: {name: "and",sig: [["Bool","Bool"], ["Bool"]]},
+	},{
+		_aso:LEFT,
+		lor: {name: "or", sig: [["Bool","Bool"], ["Bool"]]},
 	}
-	return counter++;
-	//return new Symbol(...args);
+]
+
+
+function pFactor(input) {
+	try {
+		return pWhileToken(input, /[0-9]/)
+	} catch (e) {
+		return ['',input,"Expected 2"]
+	}
 }
 
-const Types = {
-	NUM: ns(true),
-	INT: ns(),
-	STRING: ns(),
-	BOOL: ns()
+function pMath(input) {
+	return _recursiveParse(input,intrinsics.length-1);
 }
 
-const IntrCommands = {
-	IFELSE: ns(true),
+function _recursiveParse(input,level) {
+
+	if (input.length == 0) return [0, "", "Error: End of input"];
+	if (level <= 0) return pFactor(input);
+
+	
+	//Recursively parse a single term
+	var [term1,remaining,error] = _recursiveParse(input,level-1);
+
+	//Parse some Op-Term pairs
+	var struct = term1;
+	while (true) {
+		//Try to parse an Op from the current level
+		for (var op in intrinsics[level]) {
+			if (op == "_aso") continue;
+
+			var [oper, rem2, err] = pLiteralToken(remaining,intrinsics[level][op].name);
+			if (typeof err === "undefined") {
+				break;
+			}
+		}
+		// If it's not a valid Op, we're done
+		if (typeof err !== "undefined") {
+			return [struct,remaining]; 
+		}
+		//Otherwise, parse another term
+		var [term2,rem3,err] = _recursiveParse(rem2,level-1);
+
+		//Get set up to parse another Op-Term pair
+		struct = [struct, term2,op];
+		remaining = rem3;
+	}
 }
 
-function printEnum(enum) {
-	console.log(Obj)
+function printAST(ast) {
+	return _printAST(ast[0]);
+}
+function _printAST(ast) {
+	if (!Array.isArray(ast)) {
+		return ast;
+	}
+	return `(${_printAST(ast[0])} ${ast[2]} ${_printAST(ast[1])})`
 }
 
-
-console.log(Types.toString())
-
-function pExpr(input, type) {}
-function pBlock(input) {};
-
-function pIfElse(input) {
-	const [res, rem,  err] = pLiteralToken(input, "if");
-	if (err) return [null, rem, err];
-	const [res2,rem2,err2] = pLiteralToken(rem, "(");
-	if (err2) return [null, rem2, err2];
-	const [res3,rem3,err3] = pExpr(rem2, Types.BOOL);
-	if (err3) return [null, rem3, err3];
-	const [res4,rem4,err4] = pLiteralToken(rem3,")");
-	if (err4) return [null, rem4, err4];
-	const [res5,rem5,err5] = pBlock(rem4);
-	if (err5) return [null, rem5, err5];
-
-	var obj = {type: IntrCommands.IFELSE}
-
-	const [res6,rem6,err6] = pLiteralToken(input, "else");
-	if (err6) return 
-
-}
+var x= "2+2+2+2+2*2/2-2"
+console.log(x)
+console.log(printAST(pMath(x)))

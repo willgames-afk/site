@@ -57,29 +57,29 @@ var intrinsics = [
 		shr: {name: ">>", sig: [["Num", "Num"],  ["Num"]]},
 	}, {
 		_aso:LEFT,
-		{internalName: "llt", name: "<",  sig: [["Num", "Num"],  ["Bool"]]},
-		{internalName: "lte", name: "<=", sig: [["Num", "Num"],  ["Bool"]]},
-		{internalName: "lgt", name: ">",  sig: [["Num", "Num"],  ["Bool"]]},
-		{internalName: "lge", name: ">=", sig: [["Num", "Num"],  ["Bool"]]},
+		llt: {name: "<",  sig: [["Num", "Num"],  ["Bool"]]},
+		lte: {name: "<=", sig: [["Num", "Num"],  ["Bool"]]},
+		lgt: {name: ">",  sig: [["Num", "Num"],  ["Bool"]]},
+		lge: {name: ">=", sig: [["Num", "Num"],  ["Bool"]]},
 	}, {
 		_aso:LEFT,
-		{internalName: "equ", name: "==", sig: [["Any", "Any"],  ["Bool"]]},
-		{internalName: "neq", name: "!=", sig: [["Any", "Any"],  ["Bool"]]},
+		equ: {name: "==", sig: [["Any", "Any"],  ["Bool"]]},
+		neq: { name: "!=", sig: [["Any", "Any"],  ["Bool"]]},
 	}, {
 		_aso:LEFT,
-		{internalName: "band",name: "&",  sig: [["Num", "Num"],  ["Num"]]},
+		band: {name: "&",  sig: [["Num", "Num"],  ["Num"]]},
 	}, {
 		_aso:LEFT,
-		{internalName: "bxor",name: "^",  sig: [["Num", "Num"],  ["Num"]]},
+		bxor: {name: "^",  sig: [["Num", "Num"],  ["Num"]]},
 	},{
 		_aso:LEFT,
-		{internalName: "bor", name: "|",  sig: [["Num", "Num"],  ["Num"]]},
+		bor: {name: "|",  sig: [["Num", "Num"],  ["Num"]]},
 	},{
 		_aso:LEFT,
-		{internalName: "land",name: "and",sig: [["Bool","Bool"], ["Bool"]]},
+		land: {name: "and",sig: [["Bool","Bool"], ["Bool"]]},
 	},{
 		_aso:LEFT,
-		{internalName: "lor", name: "or", sig: [["Bool","Bool"], ["Bool"]]},
+		lor: {name: "or", sig: [["Bool","Bool"], ["Bool"]]},
 	}
 ]
 
