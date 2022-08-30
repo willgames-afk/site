@@ -1,6 +1,8 @@
-body{margin:0px;font-family: 'ubuntu', arial}
-h2{margin: 0px}
-a{padding: 0px;color:black;}
-a:visited{color: black;}
-.greet * {padding-right: 20px;display: inline;}
-.err {color:red;margin:0px;margin-bottom: 5px;}
+.login {
+	border:0px; 
+	font-family: 'ubuntu', arial;
+}
+.login h2 {margin: 0px}
+.login .greet  {padding-right: 20px; display: inline;}
+.login .err    {color:red; margin:0px; margin-bottom: 5px;}
+.login .cllink {float: right; padding: 0px; padding-right: 5px}

@@ -45,12 +45,14 @@ function loadBlogPosts() {
 	//alert(select.value)
 	
 	var req = new XMLHttpRequest();
-	req.open("GET", location.protocol + "//"+location.hostname + `/blog/cards?sort=${select.value}&n=10`);
+	console.log(`getting: ${location.origin + `/blog/cards/?sort=${select.value}&n=10`}`)
+	req.open("GET", location.origin + `/blog/cards/?sort=${select.value}&n=10`);
 	req.addEventListener("loadend",(e) => {
 		//alert(req.responseText);
 		//alert("HI!")
 		//alert(req.responseText)
 	
+		console.log(req.responseText);
 		var resp = JSON.parse(req.responseText);
 		var el = document.querySelector("div.posts");
 		//alert(el)

@@ -384,9 +384,19 @@ function renderFindPage(req,res) {
 					file = fs.readFileSync(pj(public_dir, req.url, "index.html"),{encoding: "utf-8"});
 				} catch (e) {
 					if (e.code == "ENOENT") {
-						file = basepage.fill({
-							content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
-						}, {req});
+						try {
+							file = basepage.fill({
+								content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
+							}, {req});
+						} catch (err) {
+							if (err.code == "ENOENT") {
+								file = basepage.fill({
+									content: fs.readFileSync(paths.pagenotfound, {encoding: "utf-8"})
+								}, {req})
+							} else {
+								throw e;
+							}
+						}
 					} else {
 						throw e;
 					}
@@ -408,7 +418,7 @@ function renderFindPage(req,res) {
 	} catch (err) {
 	
 		file = buildError(err);
-		return;
+		//return;
 	}
 	res.send(file);
 }

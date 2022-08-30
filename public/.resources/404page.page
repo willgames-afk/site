@@ -1,14 +1,7 @@
-<head>
-	<title>Does Not Exist Yet</title>
-</head>
-
-
-<h1>That Doesn't Exist!</h1>
-<div class='menu'>
-	<p id='localhost?'>Not locally hosted</p>
-	<script src='/localhostdetector.js'></script>
-	<a href='/'>Homepage</a>
-</div>
+{
+	title: "Does Not Exist (Yet?)",
+	heading: "That Doesn't Exist"
+}
 
 <p>Sorry, but either:
 <ol>
