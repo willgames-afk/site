@@ -1,4 +1,5 @@
 import {NLtoBR} from "./helpers.mjs"
+import {Template} from "./templates.mjs"
 
 export const errorMessages = {
 	// HTTP/File Error Messages

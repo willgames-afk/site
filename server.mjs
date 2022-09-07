@@ -37,15 +37,17 @@ const sessionConfig = {
 const saltRounds = 10;
 
 var paths = {
-	basepage: "basepage.tmpl",
+	basepage: "page.tmpl",
 	postTemplate: "post.tmpl",
-	postCardTemplate: "post-card.tmpl",
+	postCardTemplate: "post-card.wdgt",
 
-	index: "index.tmpl",
+	//index: "index.tmpl",
 
-	login: "login.tmpl",
-	loginWelcome: "welcome.tmpl",
-	loginCreate: "createLogin.tmpl",
+	login: "login.wdgt",
+	loginWelcome: "welcome.wdgt",
+	loginCreate: "createLogin.wdgt",
+
+	loading: "loading.wdgt",
 
 	pagenotfound: "404page.page",
 	users: "secure/users.txt"
@@ -62,6 +64,10 @@ if (!public_dir) {
 	console.error("I NEED A PUBLIC DIRECTORY TO SERVE!!!!");
 	exit(1);
 }
+if (!res_dir) {
+	console.error("Resource directory not found!")
+}
+console.log("LOADING")
 
 const blog_dir = pj(public_dir, "/blog/")
 
@@ -70,12 +76,14 @@ for (var page in paths) {
 	paths[page] = path.resolve(pj(res_dir, paths[page]));
 }
 
+function loadRes(url) {return fs.readFileSync(pj(res_dir, url), {encoding: "utf-8"})}
+
 //Init templates
 const templates = new TemplateSystem();
 
 //Preload pages
-const basepage =          templates.loadFile(paths.basepage); //Page Template
-const postTemplate =      templates.loadFile(paths.postTemplate);
+const basepage =          templates.addTemplateFile("page", paths.basepage); //Page Template
+const postTemplate =      templates.addTemplateFile("blog",paths.postTemplate);
 const postCardTemplate =  templates.loadFile(paths.postCardTemplate);
 const loginTmpl =         templates.loadFile(paths.login);
 const welcomeTmpl =       templates.loadFile(paths.loginWelcome);
@@ -94,19 +102,17 @@ function generateLoginHtml(obj) {
 		return loginTmpl.fill(obj.loginFillers || {});
 	}
 }
-templates.add("login", generateLoginHtml);
-const loadingWidget =  loadRes("loading.tmpl");
-templates.add("loading", ()=>{
-	return loadingWidget
-})
+templates.addWidget("login", generateLoginHtml);
+
+const loadingWidget =   fs.readFileSync(paths.loading, {encoding: "utf-8"});
+templates.addWidget("loading", loadingWidget)
 
 //console.log("Basepage:");
 //console.log(basepage)
 
 //Convinience functions that depend on the above things in o
-function loadRes(url) {return fs.readFileSync(pj(res_dir, url), {encoding: "utf-8"})}
 
-
+console.log("ASSETS LOADED")
 //App Init
 const app = express();
 const converter = new showdown.Converter();
@@ -368,59 +374,57 @@ function getPostCard( postname, timeZone) {
 
 //Anything in the public folder will be served from the root directory
 app.use('/', (req, res) => {
-	var file = renderFindPage(req,res);
-	/*res.type("html");
-	res.send(file);*/
+	console.log("Hit web handler")
+	let maybeFile = ""
+	try {
+		maybeFile = renderFindPage(req,res);
+	} catch (err) {
+		maybeFile = basepage.fill({ content: buildError(err)},{req});
+	}
+	res.type("html");
+	res.send(maybeFile);
 })
 
 function renderFindPage(req,res) {
-	var file;
-
-	var ext = path.extname(req.url);
-	try {
-		switch (ext) {
-			case "":
-				try {
-					file = fs.readFileSync(pj(public_dir, req.url, "index.html"),{encoding: "utf-8"});
-				} catch (e) {
-					if (e.code == "ENOENT") {
-						try {
+	let file;
+	switch (path.extname(req.url)) {
+		case "":
+			try {
+				file = fs.readFileSync(pj(public_dir, req.url, "index.html"),{encoding: "utf-8"});
+			} catch (e) {
+				if (e.code == "ENOENT") {
+					try {
+						file = basepage.fill({
+							content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
+						}, {req});
+					} catch (err) {
+						if (err.code == "ENOENT") {
 							file = basepage.fill({
-								content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
-							}, {req});
-						} catch (err) {
-							if (err.code == "ENOENT") {
-								file = basepage.fill({
-									content: fs.readFileSync(paths.pagenotfound, {encoding: "utf-8"})
-								}, {req})
-							} else {
-								throw e;
-							}
+								content: fs.readFileSync(paths.pagenotfound, {encoding: "utf-8"})
+							}, {req})
+						} else {
+							throw e;
 						}
-					} else {
-						throw e;
 					}
+				} else {
+					throw e;
 				}
-				break;
-			case ".page":
-				file = basepage.fill({
-					content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
-				});
-				break;
-			case ".tmpl":
-				file = templates.loadFile(pj(public_dir, req.url)).fill({},{req});
-				break;
-			default:
-				//file = fs.readFileSync(pj(public_dir, req.url))
-				res.sendFile(req.url,{root: public_dir});
-				return;
-		}
-	} catch (err) {
-	
-		file = buildError(err);
-		//return;
+			}
+			break;
+		case ".page":
+			file = basepage.fill({
+				content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
+			});
+			break;
+		case ".tmpl":
+			file = templates.loadFile(pj(public_dir, req.url)).fill({},{req});
+			break;
+		default:
+			//file = fs.readFileSync(pj(public_dir, req.url))
+			res.sendFile(req.url,{root: public_dir});
+			return;
 	}
-	res.send(file);
+	return file;
 }
 
 
