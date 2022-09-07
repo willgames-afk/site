@@ -31,7 +31,7 @@ export const errorMessages = {
 
 
 export function buildError(err) {
-	console.error(err);
+	console.error("\x1b[31mGENERATED ERROR!\x1b[0m\n", err);
 	//res.type("html");
 	//res.send("<h1>Error</h1>" + NLtoBR(errorMessages[err.code]));
 	return "<h1>Error</h1>" + NLtoBR(errorMessages[err.code])

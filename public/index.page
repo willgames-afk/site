@@ -1,7 +1,6 @@
 <head>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" href="/resources/markdown.css">
-	<!--<link rel="stylesheet" href="/resources/index.css">-->
 </head>
 
 <article class="content">

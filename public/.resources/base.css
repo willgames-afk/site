@@ -13,15 +13,19 @@ body{font-family: 'ubuntu', Arial;margin-top:0px;margin-bottom:0px;}
 	text-decoration: none;
 }
 #dotcanvas{position: absolute;top: 0;left: 0;background-color: gray;opacity: 1;z-index: -2;}
-
-#navbar{
+#navbar {
 	display: flex;
+	flex-wrap: wrap;
 }
 .login{
-	float: right;
+	padding-top: 15px;
+	margin-left: auto;
+	align-self: self-end;
 }
-.menu{display: flex;}
-.menu * {padding-inline-end: 1em;margin: 0px;padding: 0px 20px 0px 0px;vertical-align: baseline;}
+.menu * {padding-inline-end: 1em;margin: 0px;padding: 0px 20px 0px 0px;vertical-align: baseline; display: inline}
+.menu>:last-child {
+	padding: 0px;
+}
 
 a{padding-block-start: 1em;padding-bottom: 1em;}
 a:visited{color: black;}
@@ -30,11 +34,6 @@ ul{list-style-type: none;}
 textarea{background-color: transparent;outline: none;border-radius: 3px;border-width: 2px;border-color: #505050;font-family:monospace;}
 textarea:focus{background-color: #505050;border-color:transparent;}
 code{background-color:rgb(100,100,100);color:#000}
-
-#login{border:0px; right: 0; top: 0; position:absolute}
-#login .greet {padding-right: 20px;display: inline;}
-#login .err {color:red;margin:0px;margin-bottom: 5px;}
-#login .cllink {float: right; padding: 0px; padding-right: 5px}
 
 .loadBox{display:flex;align-items: center;}
 .loadBox p{margin:0px 0px 0px 10px;}

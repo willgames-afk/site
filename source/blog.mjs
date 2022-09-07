@@ -24,6 +24,10 @@ export function getPosts(blogDir) {
 	return dir;
 }
 
+export function getCards(posts, sortMethod) {
+	
+}
+
 export function addTimecode(filePath, fs) { //Inserts a timecode into a file
 	var code = Date.now();
 	var fileData = fs.readFileSync(filePath).toString();
