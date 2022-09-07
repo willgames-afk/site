@@ -1,6 +1,3 @@
-import {NLtoBR} from "./helpers.mjs"
-import {Template} from "./templates.mjs"
-
 export const errorMessages = {
 	// HTTP/File Error Messages
 
@@ -28,12 +25,4 @@ export const errorMessages = {
 	differentPasswords: "The passwords you entered don't match!",
 
 	serverError: "Sorry, there was some kind of server-side issue. Please contact Will, or try again later."
-}
-
-
-export function buildError(err) {
-	console.error("\x1b[31mGENERATED ERROR!\x1b[0m\n", err);
-	//res.type("html");
-	//res.send("<h1>Error</h1>" + NLtoBR(errorMessages[err.code]));
-	return "<h1>Error</h1>" + NLtoBR(errorMessages[err.code])
 }

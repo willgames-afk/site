@@ -3,10 +3,10 @@
 // TODO: Implement Comment System
 
 //Load all my custom modules
-import { TemplateSystem } from  "./source/templates.mjs";
-import { errorMessages, buildError } from "./source/errors.mjs";
+import { Template, TemplateSystem } from  "./source/templates.mjs";
+import { errorMessages } from "./source/errors.mjs";
 import { getUser, addUser } from "./source/users.mjs";
-import { red, green, shuffleArray} from "./source/helpers.mjs"
+import { red, green, shuffleArray, NLtoBR} from "./source/helpers.mjs"
 import { splitFile, convertLatex, getPosts } from "./source/blog.mjs"
 
 //Get reqire so I can load everything else
@@ -85,27 +85,35 @@ const templates = new TemplateSystem();
 const basepage =          templates.addTemplateFile("page", paths.basepage); //Page Template
 const postTemplate =      templates.addTemplateFile("blog",paths.postTemplate);
 const postCardTemplate =  templates.loadFile(paths.postCardTemplate);
+
 const loginTmpl =         templates.loadFile(paths.login);
 const welcomeTmpl =       templates.loadFile(paths.loginWelcome);
 const createLoginTmpl =   templates.loadFile(paths.loginCreate);
 
+const errHTML =           new Template('{"template": "page"}<h1>Error</h1>$message$')
+
+function generateErrorHTML(err) {
+	console.error("\x1b[31mGENERATED ERROR!\x1b[0m\n", err);
+
+	return templates.buildPage(errHTML,{},{message: NLtoBR(errorMessages[err.code])});
+}
+
 //Add thingamabobs
-function generateLoginHtml(obj) {
+function generateLoginHtml(paramparams) {
 	//console.log(obj)
 	
-	const req = obj.req;
+	const req = paramparams.req;
 	if (req.session.loggedin) {
 		console.log(`Logged in; ${req.session.username}`)
 		return welcomeTmpl.fill({username: req.session.username});
 	} else {
 		console.log(`Not logged in`);
-		return loginTmpl.fill(obj.loginFillers || {});
+		return loginTmpl.fill(paramparams.loginFillers || {});
 	}
 }
 templates.addWidget("login", generateLoginHtml);
+templates.addWidgetFile("loading", paths.loading);
 
-const loadingWidget =   fs.readFileSync(paths.loading, {encoding: "utf-8"});
-templates.addWidget("loading", loadingWidget)
 
 //console.log("Basepage:");
 //console.log(basepage)
@@ -379,29 +387,27 @@ app.use('/', (req, res) => {
 	try {
 		maybeFile = renderFindPage(req,res);
 	} catch (err) {
-		maybeFile = basepage.fill({ content: buildError(err)},{req});
+		maybeFile = generateErrorHTML(err);
 	}
-	res.type("html");
-	res.send(maybeFile);
+	if (maybeFile) {
+		res.type("html");
+		res.send(maybeFile);
+	}
 })
 
 function renderFindPage(req,res) {
 	let file;
 	switch (path.extname(req.url)) {
 		case "":
-			try {
+			try { //Try to find an index.html
 				file = fs.readFileSync(pj(public_dir, req.url, "index.html"),{encoding: "utf-8"});
 			} catch (e) {
 				if (e.code == "ENOENT") {
-					try {
-						file = basepage.fill({
-							content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
-						}, {req});
+					try { //Try to find an index.page
+						file = templates.urlBuildPage(pj(public_dir, req.url, "index.page"), {req}, {});
 					} catch (err) {
 						if (err.code == "ENOENT") {
-							file = basepage.fill({
-								content: fs.readFileSync(paths.pagenotfound, {encoding: "utf-8"})
-							}, {req})
+							file = templates.urlBuildPage(paths.pagenotfound,{req},{});
 						} else {
 							throw e;
 						}
@@ -412,12 +418,7 @@ function renderFindPage(req,res) {
 			}
 			break;
 		case ".page":
-			file = basepage.fill({
-				content: templates.loadFile(pj(public_dir, req.url, "index.page")).fill({},{req})
-			});
-			break;
-		case ".tmpl":
-			file = templates.loadFile(pj(public_dir, req.url)).fill({},{req});
+			file = templates.urlBuildPage(pj(public_dir, req.url),{req},{});
 			break;
 		default:
 			//file = fs.readFileSync(pj(public_dir, req.url))

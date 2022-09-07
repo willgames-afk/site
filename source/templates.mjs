@@ -13,7 +13,8 @@ wdgt add | no? | no  |
 server md| yes | no  |
 */
 
-
+const matchHeadTags = /<head>([\s\S]*)<\/head>/;
+const matchSpecialTags = /\$(\?)?(\w+)\$|<\$(\w+)\$>/; //Yay magic!
 
 export class TemplateSystem {
 	constructor(widgets, templates) {
@@ -30,6 +31,10 @@ export class TemplateSystem {
 		}
 	}
 
+	addWidgetFile(name, url) {
+		this.addWidget(name, fs.readFileSync(url, { encoding: "utf-8" }))
+	}
+
 	addTemplateFile(name, url) {
 		console.log("Loading Template " + name)
 		this.templates[name] = this.loadFile(url);
@@ -41,21 +46,42 @@ export class TemplateSystem {
 	/** Loads a template
 	 * 
 	 * @param {string} template - The template data
-	 * @param {TMPL_TYPE} type - Type of template- one of Template.PAGE, Template.WIDGET or Template.TEMPLATE
 	*/
-	load(template, type) {
+	load(template) {
 		if (!template) throw "No Template!";
-		return new Template(this, template, type);
+		return new Template(template);
 	}
 
 	/** Loads a template from a file
 	 * 
 	 * @param {import("fs").PathOrFileDescriptor} path 
-	 * @param  {TMPL_TYPE} type 
 	 * @returns {Template}
 	 */
-	loadFile(path, type) {
-		return this.load(fs.readFileSync(path, { encoding: "utf-8" }), type)
+	loadFile(path) {
+		return this.load(fs.readFileSync(path, { encoding: "utf-8" }))
+	}
+
+	buildPage(page, paramparams, params) {
+		if (page instanceof Template) {
+			if (page.metadata?.template === undefined) {
+				console.warn("Missing template option in page metadata, defaulting to `page`");
+				if (!page.metadata) {
+					page.metadata = {template: "page"};
+				} else {
+					page.metadata.template = "page";
+				}
+				//return;
+			}
+			if (!this.templates[page.metadata.template]) {
+				console.error("No template found!!!");
+				return;
+			}
+			return this.templates[page.metadata.template].fill({content: page, ...page.metadata, ...params},paramparams, this)
+		}
+	}
+	urlBuildPage(url, paramparams, params) {
+		console.log(`building ${url}`)
+		return this.buildPage(this.loadFile(url), paramparams, params);
 	}
 }
 
@@ -67,10 +93,11 @@ Params   ($param$)                - Y
 */
 export class Template {
 
-	constructor(parent, text) {
+	constructor(text) {
 		console.log("Started loading a template")
-		this.parent = parent;
+		//console.log(text)
 		this.file = text;
+		this.metadata = {};
 		if (this.file[0] == "{") {
 			let level = 1;
 			let i;
@@ -84,23 +111,26 @@ export class Template {
 			if (level !== 0) {
 				console.error("Unmatched Metadata Bracket!!")
 			} else {
-				console.log(this.file.slice(0,i + 1))
-				let data = JSON.parse(this.file.slice(0,i + 1));
-				console.log('data:', data);
+				//console.log(this.file.slice(0,i + 1))
+				try {
+					this.metadata = JSON.parse(this.file.slice(0,i /*+ 1*/));
+				} catch (err) {
+					console.error(`JSON error in template metadata!!`, err);
+				}
+				//console.log('data:', data);
 			}
-		} else {
-			console.log(this.file[0]);
-			console.log("No JSON found!")
-		}
+		} 
+		this.head = this.file.match(matchHeadTags)
 	}
-	fill(fparams, paramParams) {
-		let input = this.file;
+	fill(fparams, paramParams, parent) {
 		let out = this.file;
-		let unfilledParams = [];
+		console.log(this);
+		console.log(fparams,paramParams,parent)
 
 		while (true) {
 
-			const match = input.match(/\$(\?)?(\w+)\$|<\$(\w+)\$>/); //Yay magic!
+			const match = out.match(matchSpecialTags);
+			console.log(match)
 
 			//Find a special tag
 
@@ -116,42 +146,40 @@ export class Template {
 			//Now we replace the tag with its value- first we make sure it's there
 			var fillVal;
 			if (match[2]) { // If fparam
-				if (!fparams || !fparams[match[2]]) { //If we dont have it
-					unfilledParams.push(match[1]);
-					continue;
+				if (!fparams?.[match[2]]) { //If we dont have it
+					console.error("Unpassed Parameter `" + match[2] + '`')
+					fillVal = "";
 				}
 				fillVal = fparams[match[2]]; //otherwise we've got it
 			} else if (match[3]) {
-				fillVal = this.parent.globals[match[3]](paramParams)
+				if (!parent?.widgets?.[match[3]]) {
+					console.error("Couldn't find widget!!");
+					fillVal = ""
+				} else {
+					fillVal = parent.widgets[match[3]](paramParams)
+				}
+			} else {
+				console.log("Nothing???")
 			}
 
 			if (typeof fillVal !== "string") {
-				if (fillVal instanceof Page || fillVal instanceof Widget) {
+				if (fillVal instanceof Template || fillVal instanceof Widget) {
 					//Head tags in Pages or Widgets passed as parameters are added to the header of the parent template
-					const phead = fillVal.match(/<head>([\s\S]*)<\/head>/);
-					let thisHead = out.match(/<head>([\s\S]*)<\/head>/);
+					const phead = fillVal.head;
+					let thisHead = out.match(matchHeadTags);
 					if (phead) {
 						if (!thisHead) { //Puts head at start of doc, before even <html>- fine for middle templates but not good for top level templates!
 							console.error("Missing head tag in template!!");
 							out = "<head></head>" + out;
-							thisHead = out.match(/<head>([\s\S]*)<\/head>/);
+							thisHead = out.match(matchHeadTags);
 						}
-						out = out.replace(/<head>[\s\S]*<\/head>/, "<head>"+thisHead[1] + phead[1]+"</head>");
-						fillVal = fillVal.replace(/<head>[\s\S]*<\/head>/,"")
+						out = out.replace(matchHeadTags, "<head>"+thisHead[1] + phead[1]+"</head>");
+						fillVal = fillVal.replace(matchHeadTags,"")
 					}
-					if (fillVal instanceof Page) {
-
-					}
-				} else if (fillVal instanceof Template) {
-					console.error("Templates should never be filled into other templates!!")
 				} else {
-					console.error("Wonky fill value detected!!!")
+					console.error("Wonky fill value detected!")
+					console.log(fillVal)
 				}
-			}
-
-			//Fill values can also include metadata
-			if (fillVal[0] == "{") {
-
 			}
 
 			out = out.replace(match[0], fillVal);
