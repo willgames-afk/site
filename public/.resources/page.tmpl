@@ -1,3 +1,7 @@
+{
+	"template": "none"
+}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,13 +12,13 @@
 	<link rel="stylesheet" href="/resources/base.css">
 	<script src="/resources/default.js"></script>
 	<script src="/noms/nom.js"></script>
-	<title>  <spname>Willgames</spname> </title>
+	<title>  $title$ </title>
 </head>
 
 <body>
 	<header id="navbar">
 		<div class="menu-container">
-			<h1>$$title$$</h1>
+			<h1>$heading$</h1>
 			<div class="menu">
 				<p id='localhost-detector'>Not locally hosted</p>
 				<a href='/'>Homepage</a>
@@ -23,7 +27,7 @@
 		
 		<$login$>
 	</header>
-	$content$
+	$$content$$
 </body>
 
 </html>

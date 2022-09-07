@@ -1,6 +1,7 @@
 {
-	title: "Does Not Exist (Yet?)",
-	heading: "That Doesn't Exist"
+	"template": "page"
+	"title": "Does Not Exist (Yet?)",
+	"heading": "That Doesn't Exist",
 }
 
 <p>Sorry, but either:
