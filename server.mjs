@@ -90,17 +90,17 @@ const loginTmpl =         templates.loadFile(paths.login);
 const welcomeTmpl =       templates.loadFile(paths.loginWelcome);
 const createLoginTmpl =   templates.loadFile(paths.loginCreate);
 
-const errHTML =           new Template('{"template": "page"}<h1>Error</h1>$message$')
+const errHTML =           new Template('{"template": "none"}<h1>Error</h1>$message$')
 
+//Error page generator
 function generateErrorHTML(err) {
 	console.error("\x1b[31mGENERATED ERROR!\x1b[0m\n", err);
 
 	return templates.buildPage(errHTML,{},{message: NLtoBR(errorMessages[err.code])});
 }
 
-//Add thingamabobs
+//Login page generator
 function generateLoginHtml(paramparams) {
-	//console.log(obj)
 	
 	const req = paramparams.req;
 	if (req.session.loggedin) {
@@ -109,34 +109,40 @@ function generateLoginHtml(paramparams) {
 	} else {
 		console.log(`Not logged in`);
         let x = {};
+
+		// If there's a problem with login, it'll be stored in session.partialLoginDetails-
+		// This way we can add it to the login widget when the page reloads.
+		// The session is deleted after filling since it was only there to hold this data temperarily
+
         if (req.session.partialLoginDetails) {
             x = JSON.parse(JSON.stringify(req.session.partialLoginDetails));
         }
-        console.log(x);
-        paramparams.req.session.destroy(); //Get rid of login details, they were only here to fill this page this one time.
+        
+        paramparams.req.session.destroy(); 
 		return new Template(loginTmpl.fill(x || {}));
 	}
 }
+
+//Widgets
 templates.addWidget("login", generateLoginHtml);
 templates.addWidgetFile("loading", paths.loading);
 
-
-//console.log("Basepage:");
-//console.log(basepage)
+console.log("ASSETS LOADED")
 
 //Convinience functions that depend on the above things in o
 
-console.log("ASSETS LOADED")
 //App Init
 const app = express();
 const converter = new showdown.Converter();
+
 console.log("Getting posts...")
-var blogPosts = getPosts(blog_dir);
+let blogPosts = getPosts(blog_dir);
 console.log(blogPosts);
 
 // ---------- App Setup ---------- //
 
-app.use(session(sessionConfig)); //Middleware
+//Middleware for login form stuff
+app.use(session(sessionConfig));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -292,14 +298,23 @@ app.use("/login/logout", (req,res) => {
 //Resources
 app.use('/resources/', (req, res) => {
 	//console.log("handled by resources handler")
+	console.log(req.url);
+	console.log(path.dirname(req.url))
 	
 	if (path.dirname(req.url) == "/secure") {
 		res.type("text/plain");
 		res.send("Lol, no.");
+		return;
 	}
 
-	res.type(path.extname(req.url)) //Send correct filetype
-	res.send(loadRes(req.url));
+	try {
+		const lr = loadRes(req.url) 
+		res.type(path.extname(req.url)) //Send correct filetype
+		res.send(lr);
+	} catch (e) {
+		res.type("html");
+		res.send(generateErrorHTML(e));
+	}
 })
 
 

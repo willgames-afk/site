@@ -4,6 +4,7 @@ export const errorMessages = {
 	EPERM: "Sorry,but you don't have the permissions to do that. \n(EPERM)",
 	ENOENT: "Couldn't find this file :( \n(ENOENT)",
 	EACCES: "Sorry, but you don't have access to that! \n(EACCES)",
+	EISDIR: "That's a folder- you can't read those. \n(EISDIR)",
 	ECONNREFUSED: "Connection Refused. \n(ECONNREFUSED)",
 	ECONNRESET: "Connection reset by peer. :( \n(ECONNRESET)",
 	EMFILE: "Too many open files in system. (Probably due to Will writing bad code) \n(EMFILE)",

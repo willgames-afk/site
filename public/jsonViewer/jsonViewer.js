@@ -213,4 +213,4 @@ export class JSONViewer {
 	}
 }
 
-//document.body.appendChild(new JSONViewer([1, "hi", false, [3.14159, "Pi is the best number", true], { key: "value", "Pairs and things": "good" }]).html)
+document.body.appendChild(new JSONViewer([1, "hi", false, [3.14159, "Pi is the best number", true], { key: "value", "Pairs and things": "good" }]).html)
