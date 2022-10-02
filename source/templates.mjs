@@ -63,7 +63,7 @@ export class TemplateSystem {
 
 	buildPage(page, paramparams, params) {
 		if (page instanceof Template) {
-			if (page.metadata?.template === undefined) {
+			if (page.metadata === undefined || page.metadata.template === undefined) {
 				console.warn("Missing template option in page metadata, defaulting to `page`");
 				if (!page.metadata) {
 					page.metadata = {template: "page"};
@@ -117,20 +117,25 @@ export class Template {
 				} catch (err) {
 					console.error(`JSON error in template metadata!!`, err);
 				}
+                this.file = this.file.substring(i);
 				//console.log('data:', data);
 			}
 		} 
-		this.head = this.file.match(matchHeadTags)
+		const match = this.file.match(matchHeadTags)
+        if (match) {
+            this.head = match[1]
+            //this.file = this.file.replace(matchHeadTags,"")
+        }
 	}
 	fill(fparams, paramParams, parent) {
 		let out = this.file;
-		console.log(this);
-		console.log(fparams,paramParams,parent)
+		//console.log(this);
+		//console.log(fparams,paramParams,parent)
 
 		while (true) {
 
 			const match = out.match(matchSpecialTags);
-			console.log(match)
+			//console.log(match)
 
 			//Find a special tag
 
@@ -142,24 +147,25 @@ export class Template {
 			if (!match) {
 				break;
 			}
+             console.log("Match 1:",match[1])
 
 			//Now we replace the tag with its value- first we make sure it's there
-			var fillVal;
+			let fillVal;
 			if (match[2]) { // If fparam
-				if (!fparams?.[match[2]]) { //If we dont have it
+				if (fparams === undefined || fparams[match[2]] === undefined) { //If we dont have it
 					console.error("Unpassed Parameter `" + match[2] + '`')
 					fillVal = "";
-				}
-				fillVal = fparams[match[2]]; //otherwise we've got it
+				} else {
+                    console.log("Passed parameter `" + match[2] +"` value `"+ fparams[match[2]] + "`")
+                     fillVal = fparams[match[2]]; //otherwise we've got it   
+                }
 			} else if (match[3]) {
-				if (!parent?.widgets?.[match[3]]) {
+				if (parent === undefined || parent.widgets === undefined || parent.widgets[match[3]] === undefined) {
 					console.error("Couldn't find widget!!");
 					fillVal = ""
 				} else {
 					fillVal = parent.widgets[match[3]](paramParams)
 				}
-			} else {
-				console.log("Nothing???")
 			}
 
 			if (typeof fillVal !== "string") {
@@ -173,8 +179,9 @@ export class Template {
 							out = "<head></head>" + out;
 							thisHead = out.match(matchHeadTags);
 						}
-						out = out.replace(matchHeadTags, "<head>"+thisHead[1] + phead[1]+"</head>");
-						fillVal = fillVal.replace(matchHeadTags,"")
+						out = out.replace(matchHeadTags, "<head>"+thisHead[1] + phead + "</head>");
+						fillVal = fillVal.file.replace(matchHeadTags,"")
+                        console.log("fillVal from object",fillVal)
 					}
 				} else {
 					console.error("Wonky fill value detected!")
@@ -184,6 +191,7 @@ export class Template {
 
 			out = out.replace(match[0], fillVal);
 		}
+        console.log(out);
 
 		return out;
 	}

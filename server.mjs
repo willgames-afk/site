@@ -105,10 +105,16 @@ function generateLoginHtml(paramparams) {
 	const req = paramparams.req;
 	if (req.session.loggedin) {
 		console.log(`Logged in; ${req.session.username}`)
-		return welcomeTmpl.fill({username: req.session.username});
+		return new Template(welcomeTmpl.fill({username: req.session.username}));
 	} else {
 		console.log(`Not logged in`);
-		return loginTmpl.fill(paramparams.loginFillers || {});
+        let x = {};
+        if (req.session.partialLoginDetails) {
+            x = JSON.parse(JSON.stringify(req.session.partialLoginDetails));
+        }
+        console.log(x);
+        paramparams.req.session.destroy(); //Get rid of login details, they were only here to fill this page this one time.
+		return new Template(loginTmpl.fill(x || {}));
 	}
 }
 templates.addWidget("login", generateLoginHtml);
@@ -162,14 +168,13 @@ app.post("/login/login", (req, res) => {
 					console.log(req.session.username)*/
 					req.session.loggedin = true;
 					req.session.username = username;
-					req.session.save(()=>{
-						console.log("Session Saved!")
-					}); //Have to manually save because of redirect;
-
-
-					console.log("LOGIN SUCCESS!", username)
-					//res.redirect("/login/welcome");
-					res.redirect(req.headers.referer);
+                    req.session.partialLoginDetails = undefined;
+                    console.log("LOGIN SUCCESS!", username)
+					
+                    req.session.save(()=>{
+                        console.log("Session saved!")
+                        res.redirect(req.headers.referer);
+                    })
 					return;
 				} else {
 					passwordErr = errorMessages.incorrectPassword;
@@ -179,16 +184,23 @@ app.post("/login/login", (req, res) => {
 				usernameErr = errorMessages.noUserFound;
 			}
 			console.log(`Login Failed, ${passwordErr} ${usernameErr}`)
-			/*req.url = new URL(req.headers.referer).pathname
-			req.loginFillers = { usernameErr,passwordErr, username }
-			res.send(renderFindPage(req))*/
-			res.redirect(req.headers.referer);
+            if (usernameErr.length > 0) usernameErr += '<br>';
+            if (passwordErr.length > 0) passwordErr += '<br>';
+            req.session.partialLoginDetails = {username, usernameErr, passwordErr}
+            req.session.save(()=>{
+                console.log("Session saved!")
+                res.redirect(req.headers.referer);
+            })
 		})
 	} else {
-		/*req.url = new URL(req.headers.referer).pathname
-		req.loginFillers = { usernameErr,passwordErr, username }
-		res.send(renderFindPage(req))*/
-		res.redirect(req.headers.referer);
+        //Record login errors, so when page reloads it can show the user
+        if (usernameErr.length > 0) usernameErr += '<br>';
+        if (passwordErr.length > 0) passwordErr += '<br>';
+		req.session.partialLoginDetails = {username, usernameErr, passwordErr}
+        req.session.save(()=>{
+            console.log("Session saved!")
+            res.redirect(req.headers.referer);
+        })
 	}
 })
 /*app.get("/login/login", (req,res) => {
@@ -383,6 +395,7 @@ function getPostCard( postname, timeZone) {
 //Anything in the public folder will be served from the root directory
 app.use('/', (req, res) => {
 	console.log("Hit web handler")
+    console.log(req.body);
 	let maybeFile = ""
 	try {
 		maybeFile = renderFindPage(req,res);
@@ -409,7 +422,7 @@ function renderFindPage(req,res) {
 						if (err.code == "ENOENT") {
 							file = templates.urlBuildPage(paths.pagenotfound,{req},{});
 						} else {
-							throw e;
+							throw err;
 						}
 					}
 				} else {
