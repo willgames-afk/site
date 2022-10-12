@@ -1,0 +1,15 @@
+{
+    "template":"page",
+    "title": "TGL",
+    "heading": "TGL"
+}
+
+
+<head>
+	<link href='style/txtarea.css' rel="stylesheet">
+	<script src="/other/resizeTxtareas.js"></script>
+</head>
+
+<$loading$>
+
+<script src='main.js' type="module"></script>
