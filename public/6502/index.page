@@ -1,0 +1,31 @@
+{
+    "template":"page",
+    "title": "6502 things",
+    "heading": "6502 things"
+}
+
+<div class='about'>
+    <h2>About</h2>
+    <p>Here, you can find links to the tools I use to develop for my own 6502 computer, the w0, as well as some
+        programs I've made.</p>
+    <p>For those who don't know, the 6502 is a 40-year-old computer chip that kickstarted the home computer industry. Many
+        retro computers and consoles run off the 6502 or a 6502 variant, including the NES, Atari 8-bit family,
+        Commodore 64, BBC Micro, and Apple II, as well as many others. A modern version is still manufactured
+        today, and enthusiasts like <a href='https://youtube.com/watch?v=ayh0qebfD2g'>The 8-Bit Guy</a> are
+        STILL making computers based around it and writing code for those old systems.</p>
+</div>
+
+<div class='tools'>
+    <h2>Tools</h2>
+    <button onclick='window.location.href= "/doesntExistYet.html"'>Kamputer IDE</button>
+    <button onclick='window.location.href= "assembler/"'>6502 Assembler</button>
+    <button onclick='window.location.href = "simulator/"'>Emulator</button>
+    <button onclick='window.location.href = "blockDiagram/"'>Block Diagram Creator</button>
+</div>
+
+<div class='links'>
+    <h2>Links</h2>
+    <p>Helpful links to various resources</p>
+    <a href="http://www.burtonsys.com/ps2_chapweske.htm">PS/2 Overview</a><br>
+    <a href="http://web.archive.org/web/20041010021511/http://panda.cs.ndsu.nodak.edu/~achapwes/PICmicro/keyboard/atkeyboard.html">PS/2 Keyboard Documentation - Through wayback machine</a>
+</div>

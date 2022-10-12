@@ -3,10 +3,9 @@ const require = createRequire(import.meta.url);
 
 const rl = require("readline");
 const fs = require("fs");
-const path = require("path")
 
 
-//Performant user lookup
+//Temporary File-based user lookup- Should probably switch to a database at some point
 export function getUser(name, usersfile, onResult) {
 	const reader = new rl.createInterface({
 		input: fs.createReadStream(usersfile),
@@ -28,6 +27,6 @@ export function getUser(name, usersfile, onResult) {
 	})
 }
 
-export function addUser(name, usersfile,hash, onresult) {
+export function addUser(name, usersfile, hash, onresult) {
 	fs.appendFile(usersfile, `{"un":"${name}","hash":"${hash}"}\n`, onresult);
 }

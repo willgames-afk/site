@@ -1,18 +1,9 @@
+import e from "express";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 const fs = require("fs");
 const P = require("path")
-
-/*
-property | wdgt| tmpl| page
----------------------------
-head tags| yes | yes | yes
-metadata | no  | yes | yes
-tmpl add | yes | yes |
-wdgt add | no? | no  |
-server md| yes | no  |
-*/
 
 const matchHeadTags = /<head>([\s\S]*)<\/head>/;
 const matchSpecialTags = /\$(\?)?(\w+)\$|<\$(\w+)\$>/; //Yay magic!
@@ -44,51 +35,69 @@ export class TemplateSystem {
 		this.templates[name] = this.load(val);
 	}
 
-	/** Loads a template
-	 * 
-	 * @param {string} template - The template data
-	*/
+	/** Loads a template (from a string) */
 	load(template) {
 		if (!template) throw "No Template!";
 		return new Template(template);
 	}
 
-	/** Loads a template from a file
-	 * 
-	 * @param {import("fs").PathOrFileDescriptor} path 
-	 * @returns {Template}
-	 */
+	/** Loads a template from a file */
 	loadFile(path) {
 		console.log(`Loading \`${P.basename(path).substring(0, 20)}\``);
 		return this.load(fs.readFileSync(path, { encoding: "utf-8" }))
 	}
 
-	buildPage(page, paramParams, params, isPage = false) {
+	//Builds a page- You give us a page. If it's got a template option in its metadata, we'll fill it into that template.
+
+	//If the template parameter is boolean true, that means it's a page wic
+	buildPage(page, paramParams, params, template) {
 		console.log("Building page")
-		
-		if (page.metadata === undefined || page.metadata.template === undefined) {
-			if (isPage) {
+		//console.log(page);
+		console.log(template);
+
+		let mdat = page.metadata || {};
+
+		if (mdat.template === undefined) {
+
+			if (template === true) {
 				console.warn("Missing template option in page metadata, defaulting to `page`");
-				if (!page.metadata) {
-					page.metadata = {template: "page"};
-				} else {
-					page.metadata.template = "page";
-				}
+				mdat.template = "page";
+			} else if (typeof template == "string") {
+				mdat.template = template;
 			} else {
-				page.metadata.template = "none";
+				mdat.template = "none";
 			}
-			//return;
 		}
-		if (page.metadata.template == "none") {
-			return page.fill(params, paramParams, this);
+
+		console.log("Using template " + mdat.template)
+
+		if (mdat.template == "none") {
+			if (page instanceof Template) {
+				return page.fill(params, paramParams, this);
+			} else {
+				return page;
+			}
 		}
-		if (!this.templates[page.metadata.template]) {
+
+		if (!this.templates[mdat.template]) {
 			console.error("No template found!!!");
 			return;
 		}
-		return this.templates[page.metadata.template].fill({content: page, ...page.metadata, ...params},paramParams, this)
-		
+
+		const tmpl = this.templates[mdat.template]
+
+		const templateWithContent = tmpl.fill({content: page, ...mdat, ...params}, paramParams, this);
+		if (tmpl.metadata.template === "none") {
+			
+			return templateWithContent;
+		}
+		const TWCwithHead = new Template(templateWithContent, false, tmpl.head);
+
+		const parentTemplateWithContent = this.buildPage(TWCwithHead, paramParams, {...tmpl.metadata, ...mdat}, tmpl.metadata.template);
+
+		return parentTemplateWithContent
 	}
+
 	urlBuildPage(url, paramparams, params) {
 		console.log(`building ${url}`)
 		const isPage = P.extname(url) == ".page" ? true : false;
@@ -96,20 +105,76 @@ export class TemplateSystem {
 	}
 }
 
-/*Templates are pages with a complete HTML header, but are missing content.
-HTML header                       - Y
-Widgets  (<$name$>)               - Y
-Metadata (<$meta$>...</$meta$>)   - N
-Params   ($param$)                - Y
+//Metadata includes <head> tags and header json
+//Anything that includes metadata has to be a TBase
+
+//Pages:     metadata and widgets; Extends TBase
+//Widgets:  Just templates 
+//Templates: metadata, widgets, params, and subtemplates; Extends Page
+/*
+class TBase { //Base class for things within the template system
+	constructor(text, head, metadata) {
+		this.text = text;
+		this.metadata = {};
+		if (metadata !== undefined) {
+			this.metadata = metadata;
+		} else if (this.text[0] == "{") {
+			let level = 1;
+			let i;
+			for (i=1;(i<this.text.length) && level != 0;i++) {
+				if (this.text[i] == "{") {
+					level++;
+				} else if (this.text[i] == "}") {
+					level--;
+				}
+			}
+			if (level !== 0) {
+				console.error("Unmatched Metadata Bracket!!")
+			} else {
+				try {
+					this.metadata = JSON.parse(this.text.slice(0,i /*+ 1 * /));
+				} catch (err) {
+					console.error(`JSON error in template metadata!!`, err);
+				}
+				this.text = this.text.substring(i);
+			}
+		} 
+
+		if (head !== undefined) {
+			this.head = head;
+		} else {
+			const match = this.text.match(matchHeadTags)
+			if (match) {
+				this.head = match[1]
+				//this.file = this.file.replace(matchHeadTags,"") 
+			} else {
+				this.head = "";
+			}
+		}
+	}
+}
+/*
+class Page extends TBase {
+	constructor(text, head, metadata) {
+		super(text,head,metadata);
+	}
+	fill(iparams, parent) {
+		//Fill but without params
+	}
+}
+
+class Template extends Page {
+	constructor(text,head,metadata) {
+		super(text,head,metadata);
+	}
+	fill(fparams, iparams, parent) {
+		//Fill but with params
+	}
+}
 */
-
-//Pages can contain metadata and widgets but not params
-//Templates can contain metadata, widgets and params
-//Widgets can also contain metadata, widgets and params
-
 export class Template {
 
-	constructor(text, isPage) {
+	constructor(text, isPage, headTags) {
 		/*if (isPage) {
 			console.log("Started loading a Page")
 		} else {
@@ -139,11 +204,18 @@ export class Template {
 				this.file = this.file.substring(i);
 			}
 		} 
-		const match = this.file.match(matchHeadTags)
-        if (match) {
-            this.head = match[1]
-            //this.file = this.file.replace(matchHeadTags,"")
-        }
+
+		this.head = "";
+
+		if (headTags !== undefined) {
+			this.head = headTags;
+		} else {
+			const match = this.file.match(matchHeadTags)
+			if (match) {
+				this.head = match[1]
+				//this.file = this.file.replace(matchHeadTags,"")
+			}
+		}
 		console.log("Loaded tmpl/page successfully!\n");
 	}
 	fill(fparams, paramParams, parent) {
@@ -195,12 +267,14 @@ export class Template {
 				}
 			}
 
+		
 			
-			if (fillVal instanceof Template || fillVal instanceof Widget) {
+			if (fillVal instanceof Template) {
+		
 				//Head tags in Pages or Widgets passed as parameters are added to the header of the parent template
 				const phead = fillVal.head;
 				let thisHead = out.match(matchHeadTags);
-				if (phead) {
+				if (phead !== undefined) {
 					if (!thisHead) { //Puts head at start of doc, before even <html>- fine for middle templates but not good for top level templates!
 						console.error("Missing head tag in template!!");
 						out = "<head></head>" + out;
@@ -208,7 +282,7 @@ export class Template {
 					}
 					out = out.replace(matchHeadTags, "<head>"+thisHead[1] + phead + "</head>");
 					fillVal = fillVal.file.replace(matchHeadTags,"")
-					//console.log("fillVal from object",fillVal)
+				
 				}
 			} else if (!(typeof fillVal == "string")){
 				console.error("Wonky fill value detected!")
@@ -225,12 +299,8 @@ export class Template {
 }
 
 
-/* Widgets are HTML that also contain
-HTML header                       - N
-Widgets  (<$name$>)               - Y
-Metadata (<$meta$>...</$meta$>)   - N
-Params   ($param$)                - Y
-*/
+
+/*
 export class Widget extends Template {
 	constructor(...args) {
 		super(...args)
@@ -240,4 +310,4 @@ export class Page extends Template {
 	constructor(...args) {
 		super(...args)
 	}
-}
+}*/
