@@ -1,9 +1,12 @@
 import e from "express";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+//import { createRequire } from "module";
+//const require = createRequire(import.meta.url);
 
-const fs = require("fs");
-const P = require("path")
+//const fs = require("fs");
+//const P = require("path")
+import * as fs from "fs";
+import * as P from "path";
+
 
 const matchHeadTags = /<head>([\s\S]*)<\/head>/;
 const matchSpecialTags = /\$(\?)?(\w+)\$|<\$(\w+)\$>/; //Yay magic!
@@ -33,7 +36,7 @@ export class TemplateSystem {
 	}
 	addTemplate(name, val) {
 		this.templates[name] = this.load(val);
-	}
+}	
 
 	/** Loads a template (from a string) */
 	load(template) {
@@ -47,25 +50,21 @@ export class TemplateSystem {
 		return this.load(fs.readFileSync(path, { encoding: "utf-8" }))
 	}
 
-	//Builds a page- You give us a page. If it's got a template option in its metadata, we'll fill it into that template.
-
-	//If the template parameter is boolean true, that means it's a page wic
-	buildPage(page, paramParams, params, template) {
-		console.log("Building page")
+	/** Builds a page- You give us a page. If it's got a template option in its metadata, we'll fill it into that template.
+	*/
+	buildPage(page, paramParams, params, defaultTemplate) {
+		//console.log("Building page")
 		//console.log(page);
-		console.log(template);
+		//console.log("60: Template:", template);
 
 		let mdat = page.metadata || {};
 
 		if (mdat.template === undefined) {
 
-			if (template === true) {
-				console.warn("Missing template option in page metadata, defaulting to `page`");
-				mdat.template = "page";
-			} else if (typeof template == "string") {
-				mdat.template = template;
+			if (defaultTemplate) {
+				mdat.template = defaultTemplate;
 			} else {
-				mdat.template = "none";
+				mdat.template = "page";
 			}
 		}
 
@@ -231,6 +230,8 @@ export class Template {
 				break;
 			}
 
+			console.log(match[0]);
+
 			//Find a special tag
 
 			//match[0] // Everything
@@ -242,13 +243,20 @@ export class Template {
 			const isParam    = match[2] ? true : false;
 			const isWidget   = match[3] ? true : false;
 
+			if (isParam) console.log("Is Param");
+			if (isWidget) console.log("Is Widget");
+
 			//Now we replace the tag with its value- first we make sure it's there
 			let fillVal = "";
 			if (isParam && !this.isPage) {
+				//console.log("MMMMAAATTCH 1", match[1] ? true : false);
 				const isOptional = (match[1] ? true : false) && isParam;
-				const paramName = match[2]
+				const paramName = match[2];
+
+				if (isOptional) console.log("Is Optional");
 
 				if (fparams === undefined || fparams[paramName] === undefined) { //If we dont have it
+					console.log("Not Passed");
 					if (!isOptional) {
 						console.error("Unpassed Parameter `" + paramName + '`')
 					}
@@ -266,6 +274,7 @@ export class Template {
 					fillVal = parent.widgets[widgetName](paramParams)
 				}
 			}
+			console.log();
 
 		
 			
@@ -291,8 +300,9 @@ export class Template {
 			
 
 			out = out.replace(wholeMatch, fillVal);
+			console.log(out);
 		}
-        //console.log(out);
+       // console.log(out);
 
 		return out;
 	}

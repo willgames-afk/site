@@ -146,6 +146,9 @@ export function LoginSystem(templates, paths) {
 	const welcomeTmpl =       templates.loadFile(paths.loginWelcome);
 	const createLoginTmpl =   templates.loadFile(paths.loginCreate);
 
+
+	console.log(createLoginTmpl);
+
 	//Login widget generator
 	function generateLoginHtml(paramparams) {
 		const req = paramparams.req;

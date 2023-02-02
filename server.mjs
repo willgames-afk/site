@@ -139,7 +139,12 @@ app.post("/login/login/",LS.loginReciever);
 
 app.use("/login/logout/",LS.logoutReciever);
 
-app.get( "/login/createLogin", (req,res)=>LS.createLoginTmpl.fill());
+app.get( "/login/createLogin", (req,res)=>{ 
+	console.log("HEY!"); 
+	const r = templates.buildPage(LS.createLoginTmpl, {req}, {});
+	console.log("baaaab", r);
+	res.send(r);
+});
 app.post("/login/createLogin/",LS.createLoginReciever);
 
 //Resources
@@ -308,6 +313,10 @@ app.listen(port, () => {
 
 const rl = readline.createInterface({ input: stdin });
 rl.on("line",(l)=>{
+	if (l == "C") {
+		console.log("> Exiting!");
+		exit(1);
+	}
 	switch (l.toLowerCase()) {
 		case "reload":
 			//TODO: Allow hot reloading of templates without requiring server restart
