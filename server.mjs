@@ -53,23 +53,31 @@ var paths = {
 	users: "secure/users.txt"
 }
 
+function printUsage() {
+	console.log(
+`USAGE:
+${process.argv[0]} [public dir] [resource dir]
+`)
+}
 
 // ---------- App Initialization ---------- //
 
 //Get Commandline args
 const port = process.env.PORT || 3000;
 const public_dir = process.argv[2];
-const res_dir = process.argv[3] || pj(public_dir, "/.resources/");
 if (!public_dir) {
-	console.error("I NEED A PUBLIC DIRECTORY TO SERVE!!!!");
+	console.error("Public dir not found!");
+	printUsage();
 	exit(1);
 }
+const res_dir = process.argv[3] || pj(public_dir, "/.resources/");
 if (!res_dir) {
-	console.error("Resource directory not found!")
+	console.error("Resource directory not found!");
+	printUsage();
 }
-console.log("LOADING")
+console.log("LOADING");
 
-const blog_dir = pj(public_dir, "/blog/")
+const blog_dir = pj(public_dir, "/blog/");
 
 //Fix urls
 for (var page in paths) {
@@ -178,6 +186,7 @@ app.get("/blog/cards/", (req,res)=>{
 	console.log(count, sort)
 	
 	res.type(".json");
+	//TODO: Time zone?
 	res.send(getCardsBySort(sort,count));
 });
 

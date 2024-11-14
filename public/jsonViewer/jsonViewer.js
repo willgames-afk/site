@@ -198,7 +198,7 @@ export function EditableObjectArray(object, onEdit = () => { }) {
 		html.appendChild(document.createTextNode("}"))
 	}
 
-	return html
+	return html;
 }
 
 export class JSONViewer {
@@ -212,5 +212,3 @@ export class JSONViewer {
 		this.html.appendChild(EditableObjectArray(thing, options.onEdit));
 	}
 }
-
-document.body.appendChild(new JSONViewer([1, "hi", false, [3.14159, "Pi is the best number", true], { key: "value", "Pairs and things": "good" }]).html)
